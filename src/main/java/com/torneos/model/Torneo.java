@@ -1,4 +1,4 @@
-package main.java.com.torneos.model;
+package com.torneos.model;
 
 /**
  * Entidad que representa un Torneo Deportivo en el sistema.
