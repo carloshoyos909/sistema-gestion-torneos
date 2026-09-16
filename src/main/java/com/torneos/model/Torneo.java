@@ -1,12 +1,5 @@
 package com.torneos.model;
 
-/**
- * Entidad que representa un Torneo Deportivo en el sistema.
- * Contiene la información básica para la apertura de una competencia.
- * 
- * @author Santiago Bermúdez, Carlos Hoyos G., Miguel
- * @version 1.0
- */
 public class Torneo {
     private String nombre;
     private String deporte;
@@ -17,7 +10,7 @@ public class Torneo {
         this.nombre = nombre;
         this.deporte = deporte;
         this.categoria = categoria;
-        this.activo = true; // Se inicializa activo por defecto
+        this.activo = true;
     }
 
     public String getNombre() { return nombre; }
