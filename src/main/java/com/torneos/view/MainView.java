@@ -39,6 +39,8 @@ public class MainView extends AppLayout implements RouterLayout {
         nav.addItem(new SideNavItem("🏆 Crear Torneo",      CrearTorneoView.class));
         nav.addItem(new SideNavItem("👥 Registrar Equipo",  RegistrarEquipoView.class));
         nav.addItem(new SideNavItem("📅 Programar Partido", ProgramarPartidoView.class));
+        nav.addItem(new SideNavItem("👥 Consultar Equipos", EquiposView.class));
+        nav.addItem(new SideNavItem("📋 Consultar Fixture", FixtureView.class));
 
         VerticalLayout drawerContent = new VerticalLayout(nav);
         drawerContent.setSizeUndefined();

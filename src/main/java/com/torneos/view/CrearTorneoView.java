@@ -1,6 +1,6 @@
 package com.torneos.view;
 
-import com.torneos.model.Torneo;
+import com.torneos.dto.TorneoResponse;
 import com.torneos.service.TorneoService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -30,33 +30,41 @@ public class CrearTorneoView extends VerticalLayout {
         deporte.setWidthFull();
 
         TextField categoria = new TextField("Categoría");
-        categoria.setRequiredIndicatorVisible(true);
+        categoria.setRequired(true);
         categoria.setWidthFull();
 
         Button btnGuardar = new Button("Crear Torneo", event -> {
             if (nombreTorneo.isEmpty() || deporte.getValue() == null || categoria.isEmpty()) {
-                Notification n = Notification.show("Error: Faltan datos requeridos.");
-                n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                mostrarError("Faltan datos requeridos.");
                 return;
             }
 
-            Torneo nuevo = torneoService.crearTorneo(
-                    nombreTorneo.getValue(),
-                    deporte.getValue(),
-                    categoria.getValue()
-            );
+            try {
+                TorneoResponse nuevo = torneoService.crearTorneo(
+                        nombreTorneo.getValue(),
+                        deporte.getValue(),
+                        categoria.getValue()
+                );
 
-            Notification n = Notification.show(
-                    "Torneo \"" + nuevo.getNombre() + "\" creado exitosamente en estado activo.");
-            n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                Notification n = Notification.show(
+                        "Torneo \"" + nuevo.nombre() + "\" creado exitosamente.");
+                n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
-            nombreTorneo.clear();
-            categoria.clear();
-            deporte.clear();
+                nombreTorneo.clear();
+                categoria.clear();
+                deporte.clear();
+            } catch (IllegalArgumentException ex) {
+                mostrarError(ex.getMessage());
+            }
         });
 
         add(nombreTorneo, deporte, categoria, btnGuardar);
         setWidth("500px");
         getStyle().set("margin", "0 auto");
+    }
+
+    private void mostrarError(String mensaje) {
+        Notification n = Notification.show("Error: " + mensaje);
+        n.addThemeVariants(NotificationVariant.LUMO_ERROR);
     }
 }

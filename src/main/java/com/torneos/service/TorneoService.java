@@ -1,36 +1,67 @@
 package com.torneos.service;
 
+import com.torneos.dto.TorneoResponse;
 import com.torneos.model.Torneo;
+import com.torneos.repository.TorneoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TorneoService {
 
-    private final List<Torneo> torneos = new ArrayList<>();
+    private final TorneoRepository torneoRepository;
 
-    public Torneo crearTorneo(String nombre, String deporte, String categoria) {
-        Torneo torneo = new Torneo(nombre, deporte, categoria);
-        torneos.add(torneo);
-        return torneo;
+    public TorneoService(TorneoRepository torneoRepository) {
+        this.torneoRepository = torneoRepository;
     }
 
-    public List<Torneo> getTorneos() {
-        return new ArrayList<>(torneos);
+    @Transactional
+    public TorneoResponse crearTorneo(String nombre, String deporte, String categoria) {
+        String nombreNormalizado = nombre.trim();
+
+        if (torneoRepository.existsByNombreIgnoreCase(nombreNormalizado)) {
+            throw new IllegalArgumentException("El nombre del torneo ya se encuentra registrado.");
+        }
+
+        Torneo torneo = new Torneo(
+                nombreNormalizado,
+                deporte.trim(),
+                categoria.trim()
+        );
+
+        return toResponse(torneoRepository.save(torneo));
     }
 
-    public Optional<Torneo> buscarPorNombre(String nombre) {
-        return torneos.stream()
-                .filter(t -> t.getNombre().equalsIgnoreCase(nombre))
-                .findFirst();
-    }
-
-    public List<Torneo> getTorneosActivos() {
-        return torneos.stream()
-                .filter(Torneo::isActivo)
+    @Transactional(readOnly = true)
+    public List<TorneoResponse> getTorneos() {
+        return torneoRepository.findAll().stream()
+                .map(this::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Torneo buscarEntidadPorId(Long id) {
+        return torneoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("El torneo no existe."));
+    }
+
+    @Transactional(readOnly = true)
+    public List<TorneoResponse> getTorneosActivos() {
+        return torneoRepository.findAll().stream()
+                .filter(Torneo::isActivo)
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private TorneoResponse toResponse(Torneo torneo) {
+        return new TorneoResponse(
+                torneo.getId(),
+                torneo.getNombre(),
+                torneo.getDeporte(),
+                torneo.getCategoria(),
+                torneo.isActivo()
+        );
     }
 }
