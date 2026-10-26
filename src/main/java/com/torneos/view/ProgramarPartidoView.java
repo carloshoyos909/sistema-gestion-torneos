@@ -17,9 +17,11 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "programar-partido", layout = MainView.class)
 @PageTitle("Programar Partido")
+@RolesAllowed({"ADMIN", "ORGANIZADOR"})
 public class ProgramarPartidoView extends VerticalLayout {
 
     private final TorneoService torneoService;

@@ -9,9 +9,11 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "fixture", layout = MainView.class)
 @PageTitle("Fixture")
+@RolesAllowed({"ADMIN", "ORGANIZADOR", "JUGADOR"})
 public class FixtureView extends VerticalLayout {
 
     private final PartidoService partidoService;

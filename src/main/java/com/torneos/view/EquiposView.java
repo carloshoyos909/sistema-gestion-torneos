@@ -9,9 +9,11 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "equipos", layout = MainView.class)
 @PageTitle("Equipos")
+@RolesAllowed({"ADMIN", "ORGANIZADOR", "JUGADOR"})
 public class EquiposView extends VerticalLayout {
 
     private final EquipoService equipoService;

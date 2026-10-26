@@ -1,5 +1,8 @@
 package com.torneos.view;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
@@ -9,29 +12,49 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+import jakarta.annotation.security.RolesAllowed;
+
 @Route(value = "", layout = MainView.class)
 @PageTitle("Inicio — Gestión de Torneos")
+@RolesAllowed({"ADMIN", "ORGANIZADOR", "JUGADOR"})
 public class HomeView extends VerticalLayout {
 
     public HomeView() {
-        H2 bienvenida = new H2("Bienvenido al Sistema de Gestión de Torneos");
+        boolean esAdmin       = tieneRol("ROLE_ADMIN");
+        boolean esOrganizador = tieneRol("ROLE_ORGANIZADOR");
 
+        H2 bienvenida = new H2("Bienvenido al Sistema de Gestión de Torneos");
         Paragraph descripcion = new Paragraph(
                 "Usa el menú lateral o las tarjetas de abajo para navegar.");
 
-        VerticalLayout tarjetas = new VerticalLayout(
-                crearTarjeta("🏆 Crear Torneo",
-                        "Registra una nueva competencia con nombre, deporte y categoría.",
-                        "crear-torneo"),
-                crearTarjeta("👥 Registrar Equipo",
-                        "Inscribe un equipo y agrega su nómina de jugadores.",
-                        "registrar-equipo"),
-                crearTarjeta("📅 Programar Partido",
-                        "Asigna fechas, horas y canchas a los encuentros del fixture.",
-                        "programar-partido")
-        );
+        VerticalLayout tarjetas = new VerticalLayout();
         tarjetas.setSpacing(true);
         tarjetas.setPadding(false);
+
+        if (esAdmin || esOrganizador) {
+            tarjetas.add(crearTarjeta("🏆 Crear Torneo",
+                    "Registra una nueva competencia con nombre, deporte y categoría.",
+                    "crear-torneo"));
+            tarjetas.add(crearTarjeta("👥 Registrar Equipo",
+                    "Inscribe un equipo y agrega su nómina de jugadores.",
+                    "registrar-equipo"));
+            tarjetas.add(crearTarjeta("📅 Programar Partido",
+                    "Asigna fechas, horas y canchas a los encuentros del fixture.",
+                    "programar-partido"));
+        }
+
+        tarjetas.add(crearTarjeta("👥 Consultar Equipos",
+                "Consulta los equipos inscritos en cada torneo.",
+                "equipos"));
+        tarjetas.add(crearTarjeta("📋 Consultar Fixture",
+                "Revisa el calendario de partidos programados.",
+                "fixture"));
+
+        if (esAdmin) {
+            tarjetas.add(crearTarjeta("⚙️ Administración",
+                    "Gestiona los usuarios del sistema.",
+                    "admin"));
+        }
 
         setAlignItems(FlexComponent.Alignment.START);
         setPadding(true);
@@ -58,5 +81,12 @@ public class HomeView extends VerticalLayout {
                 .set("max-width", "420px");
         tarjeta.setPadding(true);
         return tarjeta;
+    }
+
+    private boolean tieneRol(String rol) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(rol));
     }
 }

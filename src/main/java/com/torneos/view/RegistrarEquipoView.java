@@ -13,12 +13,14 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Route(value = "registrar-equipo", layout = MainView.class)
 @PageTitle("Registrar Equipo")
+@RolesAllowed({"ADMIN", "ORGANIZADOR"})
 public class RegistrarEquipoView extends VerticalLayout {
 
     private final EquipoService equipoService;
