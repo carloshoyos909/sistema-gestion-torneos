@@ -1,5 +1,6 @@
 package com.torneos.view;
 
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.login.LoginForm;
@@ -27,9 +28,14 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         login.setAction("login");
 
         Paragraph hint = new Paragraph("Usuarios de prueba — admin / organizador1 / jugador1  (contraseña: 12345)");
-        hint.getStyle().set("color", "var(--lumo-secondary-text-color)").set("font-size", "var(--lumo-font-size-s)");
+        hint.getStyle()
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("font-size", "var(--lumo-font-size-s)");
 
-        add(new H1("🏆 Sistema de Torneos"), login, hint);
+        Anchor linkRegistro = new Anchor("registro", "¿Eres organizador? Regístrate aquí");
+        linkRegistro.getStyle().set("font-size", "var(--lumo-font-size-s)");
+
+        add(new H1("🏆 Sistema de Torneos"), login, hint, linkRegistro);
     }
 
     @Override
