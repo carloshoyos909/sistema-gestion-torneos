@@ -1,5 +1,9 @@
 package com.torneos.view;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -13,10 +17,8 @@ import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinServletRequest;
+
 import jakarta.annotation.security.PermitAll;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
 @PermitAll
 public class MainView extends AppLayout implements RouterLayout {
@@ -86,10 +88,11 @@ public class MainView extends AppLayout implements RouterLayout {
             nav.addItem(new SideNavItem("📋 Panel Organizador", OrganizadorView.class));
         }
 
-        nav.addItem(new SideNavItem("👥 Consultar Equipos", EquiposView.class));
-        nav.addItem(new SideNavItem("📋 Consultar Fixture",  FixtureView.class));
-        nav.addItem(new SideNavItem("⚽ Panel Jugador",      JugadorView.class));
-        nav.addItem(new SideNavItem("👤 Mi Perfil",          PerfilView.class));
+        nav.addItem(new SideNavItem("👥 Consultar Equipos",   EquiposView.class));
+        nav.addItem(new SideNavItem("📋 Consultar Fixture",    FixtureView.class));
+        nav.addItem(new SideNavItem("🥇 Tabla de Posiciones",  TablaPosicionesView.class));
+        nav.addItem(new SideNavItem("⚽ Panel Jugador",        JugadorView.class));
+        nav.addItem(new SideNavItem("👤 Mi Perfil",            PerfilView.class));
 
         if (esAdmin) {
             nav.addItem(new SideNavItem("⚙️ Administración", AdminView.class));

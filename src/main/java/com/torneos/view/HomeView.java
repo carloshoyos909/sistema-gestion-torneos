@@ -49,6 +49,9 @@ public class HomeView extends VerticalLayout {
         tarjetas.add(crearTarjeta("📋 Consultar Fixture",
                 "Revisa el calendario de partidos programados.",
                 "fixture"));
+        tarjetas.add(crearTarjeta("🥇 Tabla de Posiciones",
+                "Consulta la clasificación actualizada del torneo.",
+                "tabla-posiciones"));
 
         if (esAdmin) {
             tarjetas.add(crearTarjeta("⚙️ Administración",
