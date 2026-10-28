@@ -1,12 +1,14 @@
 package com.torneos.service;
 
-import com.torneos.dto.TorneoResponse;
-import com.torneos.model.Torneo;
-import com.torneos.repository.TorneoRepository;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.torneos.dto.TorneoResponse;
+import com.torneos.model.FormatoTorneo;
+import com.torneos.model.Torneo;
+import com.torneos.repository.TorneoRepository;
 
 @Service
 public class TorneoService {
@@ -18,20 +20,20 @@ public class TorneoService {
     }
 
     @Transactional
-    public TorneoResponse crearTorneo(String nombre, String deporte, String categoria) {
+    public TorneoResponse crearTorneo(String nombre, String deporte, String categoria, FormatoTorneo formato) {
         String nombreNormalizado = nombre.trim();
 
         if (torneoRepository.existsByNombreIgnoreCase(nombreNormalizado)) {
             throw new IllegalArgumentException("El nombre del torneo ya se encuentra registrado.");
         }
 
-        Torneo torneo = new Torneo(
-                nombreNormalizado,
-                deporte.trim(),
-                categoria.trim()
-        );
-
+        Torneo torneo = new Torneo(nombreNormalizado, deporte.trim(), categoria.trim(), formato);
         return toResponse(torneoRepository.save(torneo));
+    }
+
+    @Transactional
+    public TorneoResponse crearTorneo(String nombre, String deporte, String categoria) {
+        return crearTorneo(nombre, deporte, categoria, FormatoTorneo.LIGA);
     }
 
     @Transactional(readOnly = true)
@@ -61,7 +63,8 @@ public class TorneoService {
                 torneo.getNombre(),
                 torneo.getDeporte(),
                 torneo.getCategoria(),
-                torneo.isActivo()
+                torneo.isActivo(),
+                torneo.getFormato()
         );
     }
 }

@@ -4,11 +4,17 @@ import com.torneos.dto.EquipoResponse;
 import com.torneos.dto.TorneoResponse;
 import com.torneos.service.EquipoService;
 import com.torneos.service.TorneoService;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+
 import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "equipos", layout = MainView.class)
@@ -27,10 +33,16 @@ public class EquiposView extends VerticalLayout {
         torneo.setItems(torneoService.getTorneosActivos());
         torneo.setWidthFull();
 
-        grid.addColumn(EquipoResponse::id).setHeader("ID");
-        grid.addColumn(EquipoResponse::nombre).setHeader("Equipo");
-        grid.addColumn(equipo -> String.join(", ", equipo.jugadores()))
-                .setHeader("Jugadores");
+        grid.addColumn(EquipoResponse::nombre).setHeader("Equipo").setSortable(true);
+        grid.addColumn(equipo -> equipo.jugadores().size() + " jugadores").setHeader("Nómina");
+
+        grid.addComponentColumn(equipo -> {
+            Button btnVer = new Button("Ver detalle");
+            btnVer.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+            btnVer.addClickListener(e -> abrirDetalleEquipo(equipo));
+            return btnVer;
+        }).setHeader("Detalle");
+
         grid.setWidthFull();
 
         torneo.addValueChangeListener(event -> {
@@ -43,5 +55,34 @@ public class EquiposView extends VerticalLayout {
 
         add(torneo, grid);
         setPadding(true);
+    }
+
+    private void abrirDetalleEquipo(EquipoResponse equipo) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("👥 " + equipo.nombre());
+        dialog.setWidth("400px");
+
+        VerticalLayout content = new VerticalLayout();
+        content.setPadding(false);
+
+        H3 tituloNomina = new H3("Nómina de jugadores");
+        content.add(tituloNomina);
+
+        if (equipo.jugadores().isEmpty()) {
+            content.add(new Span("Este equipo no tiene jugadores registrados."));
+        } else {
+            Grid<String> gridJugadores = new Grid<>();
+            gridJugadores.addColumn(nombre -> nombre).setHeader("Jugador");
+            gridJugadores.setItems(equipo.jugadores());
+            gridJugadores.setAllRowsVisible(true);
+            gridJugadores.setWidthFull();
+            content.add(gridJugadores);
+        }
+
+        Button btnCerrar = new Button("Cerrar", e -> dialog.close());
+        btnCerrar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        dialog.add(content, btnCerrar);
+        dialog.open();
     }
 }

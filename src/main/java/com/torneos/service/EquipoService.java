@@ -1,15 +1,16 @@
 package com.torneos.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.torneos.dto.EquipoResponse;
 import com.torneos.model.Equipo;
 import com.torneos.model.Jugador;
 import com.torneos.model.Torneo;
 import com.torneos.repository.EquipoRepository;
 import com.torneos.repository.TorneoRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 public class EquipoService {
@@ -59,6 +60,12 @@ public class EquipoService {
     public Equipo buscarEntidadPorId(Long torneoId, Long equipoId) {
         return equipoRepository.findByIdAndTorneoId(equipoId, torneoId)
                 .orElseThrow(() -> new IllegalArgumentException("El equipo no existe en el torneo seleccionado."));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Equipo> getEntidades(Long torneoId) {
+        validarTorneo(torneoId);
+        return equipoRepository.findByTorneoIdOrderByNombreAsc(torneoId);
     }
 
     private void validarTorneo(Long torneoId) {
