@@ -27,10 +27,14 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
         login.setAction("login");
 
-        Paragraph hint = new Paragraph("Usuarios de prueba — admin / organizador1 / jugador1  (contraseña: 12345)");
+        Paragraph hint = new Paragraph("Si eres jugador, tu usuario es tu nombre completo en minúsculas, "
+                + "sin espacios ni caracteres especiales (ej.: Miguel Ángel Pérez → miguelangelperez). "
+                + "La contraseña inicial es 12345; después de iniciar sesión puedes cambiarla desde Mi Perfil.");
         hint.getStyle()
                 .set("color", "var(--lumo-secondary-text-color)")
-                .set("font-size", "var(--lumo-font-size-s)");
+                .set("font-size", "var(--lumo-font-size-s)")
+                .set("max-width", "500px")
+                .set("text-align", "center");
 
         Anchor linkRegistro = new Anchor("registro", "¿Eres organizador? Regístrate aquí");
         linkRegistro.getStyle().set("font-size", "var(--lumo-font-size-s)");

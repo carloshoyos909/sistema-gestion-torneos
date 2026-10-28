@@ -1,6 +1,8 @@
 package com.torneos.service;
 
+import java.text.Normalizer;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -82,14 +84,22 @@ public class EquipoService {
     }
 
     // Crea automáticamente un usuario con rol JUGADOR para el nombre dado.
-    // username = nombre en minúsculas sin espacios (ej. "Carlos Hoyos" -> "carloshoyos")
+    // username = nombre sin espacios ni tildes, en minúsculas (ej. "Ángel Pérez" -> "angelperez")
     // password = "12345" encriptada con BCrypt
     private void crearUsuarioJugadorSiNoExiste(String nombreJugador) {
-        String username = nombreJugador.toLowerCase().replaceAll("\\s+", "");
-        if (!usuarioRepository.existsByUsername(username)) {
+        String username = normalizarUsername(nombreJugador);
+        if (!username.isBlank() && !usuarioRepository.existsByUsername(username)) {
             Usuario usuario = new Usuario(username, passwordEncoder.encode("12345"), Rol.JUGADOR);
             usuarioRepository.save(usuario);
         }
+    }
+
+    private String normalizarUsername(String nombreJugador) {
+        String sinAcentos = Normalizer.normalize(nombreJugador, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]", "");
+        return sinAcentos.length() <= 60 ? sinAcentos : sinAcentos.substring(0, 60);
     }
 
     private void validarTorneo(Long torneoId) {
