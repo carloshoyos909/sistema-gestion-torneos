@@ -27,8 +27,10 @@ public class EstadisticaService {
         this.torneoRepository = torneoRepository;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<EstadisticaResponse> getEstadisticas(Long torneoId, String filtroNombre) {
+        crearEstadisticasFaltantes(torneoId);
+
         List<Estadistica> lista;
         if (filtroNombre != null && !filtroNombre.isBlank()) {
             lista = estadisticaRepository.buscarPorTorneoYNombreJugador(torneoId, filtroNombre.trim());
@@ -38,20 +40,49 @@ public class EstadisticaService {
         return lista.stream().map(this::toResponse).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<Jugador> getJugadores(Long torneoId) {
+        Torneo torneo = torneoRepository.findById(torneoId)
+                .orElseThrow(() -> new IllegalArgumentException("El torneo no existe."));
+        return jugadorRepository.findByEquipoTorneoIdOrderByNombreAsc(torneo.getId());
+    }
+
+    private void crearEstadisticasFaltantes(Long torneoId) {
+        Torneo torneo = torneoRepository.findById(torneoId)
+                .orElseThrow(() -> new IllegalArgumentException("El torneo no existe."));
+
+        List<Estadistica> nuevas = jugadorRepository.findByEquipoTorneoIdOrderByNombreAsc(torneoId).stream()
+                .filter(jugador -> estadisticaRepository
+                        .findByJugadorIdAndTorneoId(jugador.getId(), torneoId).isEmpty())
+                .map(jugador -> new Estadistica(jugador, torneo))
+                .toList();
+
+        if (!nuevas.isEmpty()) {
+            estadisticaRepository.saveAll(nuevas);
+        }
+    }
+
     @Transactional
     public EstadisticaResponse actualizarEstadistica(Long jugadorId, Long torneoId,
                                                       int goles, int asistencias,
                                                       int partidosJugados,
                                                       int tarjetasAmarillas, int tarjetasRojas) {
+        if (goles < 0 || asistencias < 0 || partidosJugados < 0
+                || tarjetasAmarillas < 0 || tarjetasRojas < 0) {
+            throw new IllegalArgumentException("Las estadísticas no pueden tener valores negativos.");
+        }
+
+        Jugador jugador = jugadorRepository.findById(jugadorId)
+                .orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado."));
+        Torneo torneo = torneoRepository.findById(torneoId)
+                .orElseThrow(() -> new IllegalArgumentException("Torneo no encontrado."));
+        if (!jugador.getEquipo().getTorneo().getId().equals(torneo.getId())) {
+            throw new IllegalArgumentException("El jugador no pertenece al torneo seleccionado.");
+        }
+
         Estadistica est = estadisticaRepository
                 .findByJugadorIdAndTorneoId(jugadorId, torneoId)
-                .orElseGet(() -> {
-                    Jugador jugador = jugadorRepository.findById(jugadorId)
-                            .orElseThrow(() -> new IllegalArgumentException("Jugador no encontrado."));
-                    Torneo torneo = torneoRepository.findById(torneoId)
-                            .orElseThrow(() -> new IllegalArgumentException("Torneo no encontrado."));
-                    return new Estadistica(jugador, torneo);
-                });
+                .orElseGet(() -> new Estadistica(jugador, torneo));
 
         est.setGoles(goles);
         est.setAsistencias(asistencias);
