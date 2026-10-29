@@ -32,15 +32,3 @@ Implementar la persistencia de los datos del torneo mediante PostgreSQL e integr
 8. No es posible programar un partido entre un equipo contra sí mismo.
 9. No es posible programar un partido utilizando equipos que pertenezcan a otro torneo.
 10. Las credenciales configurables de la base de datos no se almacenan en el repositorio.
-
-## Evidencias recomendadas
-
-- Captura de PostgreSQL con las cuatro tablas creadas.
-- Captura de registro de torneo.
-- Captura de registro de equipo con jugadores.
-- Consulta SQL mostrando el equipo y sus jugadores.
-- Captura de programación de partido.
-- Consulta SQL mostrando el fixture.
-- Capturas de `GET /api/torneos/{id}/equipos` y `GET /api/torneos/{id}/partidos`.
-- Captura del Project de GitHub con las tareas del Sprint 2 en estado Complete.
-- Enlace al Pull Request que integra Sprint 2.
