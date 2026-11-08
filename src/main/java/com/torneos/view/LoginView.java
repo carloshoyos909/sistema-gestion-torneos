@@ -2,7 +2,6 @@ package com.torneos.view;
 
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -27,19 +26,18 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
         login.setAction("login");
 
-        Paragraph hint = new Paragraph("Si eres jugador, tu usuario es tu nombre completo en minúsculas, "
-                + "sin espacios ni caracteres especiales (ej.: Miguel Ángel Pérez → miguelangelperez). "
-                + "La contraseña inicial es 12345; después de iniciar sesión puedes cambiarla desde Mi Perfil.");
-        hint.getStyle()
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("font-size", "var(--lumo-font-size-s)")
-                .set("max-width", "500px")
-                .set("text-align", "center");
-
         Anchor linkRegistro = new Anchor("registro", "¿Eres organizador? Regístrate aquí");
         linkRegistro.getStyle().set("font-size", "var(--lumo-font-size-s)");
 
-        add(new H1("🏆 Sistema de Torneos"), login, hint, linkRegistro);
+        com.vaadin.flow.component.html.Paragraph hint = new com.vaadin.flow.component.html.Paragraph(
+                "Jugadores: tu usuario es tu nombre sin espacios en minúsculas (ej. 'Carlos Hoyos' → 'carloshoyos') y tu contraseña es 12345");
+        hint.getStyle()
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("font-size", "var(--lumo-font-size-s)")
+                .set("max-width", "360px")
+                .set("text-align", "center");
+
+        add(new H1("🏆 Sistema de Torneos"), login, linkRegistro, hint);
     }
 
     @Override

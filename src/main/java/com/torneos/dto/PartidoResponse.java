@@ -14,7 +14,9 @@ public record PartidoResponse(
         String cancha,
         boolean jugado,
         Integer golesLocal,
-        Integer golesVisitante
+        Integer golesVisitante,
+        String fase,
+        Integer ronda
 ) {
     public String estado() {
         if (jugado && golesLocal != null && golesVisitante != null) {

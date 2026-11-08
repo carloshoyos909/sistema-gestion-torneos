@@ -15,14 +15,17 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.timepicker.TimePicker;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+
 import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "programar-partido", layout = MainView.class)
 @PageTitle("Programar Partido")
 @RolesAllowed({"ADMIN", "ORGANIZADOR"})
-public class ProgramarPartidoView extends VerticalLayout {
+public class ProgramarPartidoView extends VerticalLayout implements BeforeEnterObserver {
 
     private final TorneoService torneoService;
     private final EquipoService equipoService;
@@ -98,6 +101,12 @@ public class ProgramarPartidoView extends VerticalLayout {
         add(torneo, equiposLayout, fechaLugarLayout, btnProgramar);
         setWidth("700px");
         getStyle().set("margin", "0 auto");
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        // Recarga torneos activos cada vez que se entra a la vista
+        torneo.setItems(torneoService.getTorneosActivos());
     }
 
     private void cargarEquipos() {

@@ -46,6 +46,20 @@ public class RegistroView extends VerticalLayout {
         username.setRequired(true);
         username.setHelperText("Mínimo 3 caracteres, sin espacios.");
 
+        // Validación en tiempo real
+        username.addValueChangeListener(e -> {
+            String val = e.getValue().trim();
+            if (val.contains(" ")) {
+                username.setErrorMessage("No puede contener espacios.");
+                username.setInvalid(true);
+            } else if (val.length() < 3 && !val.isEmpty()) {
+                username.setErrorMessage("Mínimo 3 caracteres.");
+                username.setInvalid(true);
+            } else {
+                username.setInvalid(false);
+            }
+        });
+
         PasswordField password = new PasswordField("Contraseña");
         password.setWidthFull();
         password.setRequired(true);

@@ -1,17 +1,8 @@
 package com.torneos.model;
 
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "partidos")
@@ -39,6 +30,14 @@ public class Partido {
     @Column(name = "goles_visitante")
     private Integer golesVisitante;
 
+    // Fase del partido: "GRUPOS - Grupo A", "DIECISEISAVOS", "OCTAVOS", etc.
+    @Column(length = 40)
+    private String fase;
+
+    // Número de ronda dentro de la fase (1 = primera jornada)
+    @Column
+    private Integer ronda;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "torneo_id", nullable = false)
     private Torneo torneo;
@@ -63,6 +62,13 @@ public class Partido {
         this.cancha = cancha;
     }
 
+    public Partido(Torneo torneo, Equipo equipoLocal, Equipo equipoVisitante,
+                   LocalDate fecha, LocalTime hora, String cancha, String fase, int ronda) {
+        this(torneo, equipoLocal, equipoVisitante, fecha, hora, cancha);
+        this.fase = fase;
+        this.ronda = ronda;
+    }
+
     public Long getId() { return id; }
     public LocalDate getFecha() { return fecha; }
     public LocalTime getHora() { return hora; }
@@ -73,6 +79,10 @@ public class Partido {
     public void setGolesLocal(Integer golesLocal) { this.golesLocal = golesLocal; }
     public Integer getGolesVisitante() { return golesVisitante; }
     public void setGolesVisitante(Integer golesVisitante) { this.golesVisitante = golesVisitante; }
+    public String getFase() { return fase; }
+    public void setFase(String fase) { this.fase = fase; }
+    public Integer getRonda() { return ronda; }
+    public void setRonda(Integer ronda) { this.ronda = ronda; }
     public Torneo getTorneo() { return torneo; }
     public Equipo getEquipoLocal() { return equipoLocal; }
     public Equipo getEquipoVisitante() { return equipoVisitante; }

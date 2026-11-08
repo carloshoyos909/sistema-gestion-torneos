@@ -73,7 +73,9 @@ public class PartidoService {
                 p.getCancha(),
                 p.isJugado(),
                 p.getGolesLocal(),
-                p.getGolesVisitante()
+                p.getGolesVisitante(),
+                p.getFase(),
+                p.getRonda()
         );
     }
 }

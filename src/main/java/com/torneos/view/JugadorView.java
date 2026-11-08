@@ -85,6 +85,12 @@ public class JugadorView extends VerticalLayout {
         HorizontalLayout filtros = new HorizontalLayout(torneo, buscarJugador,
                 anchorPdf, anchorExcel);
         filtros.setAlignItems(FlexComponent.Alignment.END);
+        filtros.getStyle()
+                .set("background", "var(--lumo-contrast-5pct)")
+                .set("padding", "12px 16px")
+                .set("border-radius", "var(--lumo-border-radius-m)")
+                .set("margin-bottom", "8px");
+        filtros.setWidthFull();
 
         // ── Grid ─────────────────────────────────────────────────────────────
         configurarGrid();

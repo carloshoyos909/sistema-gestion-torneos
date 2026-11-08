@@ -1,11 +1,5 @@
 package com.torneos.view;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import com.torneos.dto.PartidoResponse;
 import com.torneos.dto.TorneoResponse;
 import com.torneos.service.PartidoService;
@@ -15,21 +9,29 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
-
 import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Route(value = "fixture", layout = MainView.class)
 @PageTitle("Fixture")
@@ -38,9 +40,9 @@ public class FixtureView extends VerticalLayout {
 
     private final PartidoService partidoService;
     private final ReporteService reporteService;
-    private final Grid<PartidoResponse> grid = new Grid<>(PartidoResponse.class, false);
     private TorneoResponse torneoSeleccionado;
     private List<PartidoResponse> partidosActuales = new ArrayList<>();
+    private final FlexLayout contenedorTarjetas = new FlexLayout();
 
     public FixtureView(PartidoService partidoService, TorneoService torneoService,
                        ReporteService reporteService) {
@@ -52,7 +54,6 @@ public class FixtureView extends VerticalLayout {
         torneo.setItems(torneoService.getTorneosActivos());
         torneo.setWidth("350px");
 
-        // Botones de exportación
         Button btnPdf = new Button("PDF", new Icon(VaadinIcon.FILE_TEXT));
         btnPdf.addThemeVariants(ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_SMALL);
         btnPdf.setEnabled(false);
@@ -61,7 +62,6 @@ public class FixtureView extends VerticalLayout {
         btnExcel.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_SMALL);
         btnExcel.setEnabled(false);
 
-        // Los Anchor se recrean dinámicamente cuando hay torneo seleccionado
         Anchor anchorPdf = new Anchor("", "");
         anchorPdf.getElement().setAttribute("download", true);
         anchorPdf.add(btnPdf);
@@ -72,77 +72,123 @@ public class FixtureView extends VerticalLayout {
         anchorExcel.add(btnExcel);
         anchorExcel.getStyle().set("text-decoration", "none");
 
-        configurarGrid();
+        contenedorTarjetas.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        contenedorTarjetas.getStyle().set("gap", "16px").set("padding", "8px 0");
+        contenedorTarjetas.setWidthFull();
 
         torneo.addValueChangeListener(event -> {
             torneoSeleccionado = event.getValue();
             if (torneoSeleccionado == null) {
-                grid.setItems();
+                contenedorTarjetas.removeAll();
                 partidosActuales = new ArrayList<>();
                 btnPdf.setEnabled(false);
                 btnExcel.setEnabled(false);
             } else {
                 partidosActuales = partidoService.getPartidos(torneoSeleccionado.id());
-                grid.setItems(partidosActuales);
+                renderizarTarjetas();
                 btnPdf.setEnabled(true);
                 btnExcel.setEnabled(true);
-
                 String nombre = torneoSeleccionado.nombre();
-
-                StreamResource pdfResource = new StreamResource(
+                anchorPdf.setHref(new StreamResource(
                         "fixture_" + nombre.replaceAll("\\s+", "_") + ".pdf",
-                        () -> reporteService.generarPdfFixture(nombre, partidosActuales));
-                anchorPdf.setHref(pdfResource);
-
-                StreamResource excelResource = new StreamResource(
+                        () -> reporteService.generarPdfFixture(nombre, partidosActuales)));
+                anchorExcel.setHref(new StreamResource(
                         "fixture_" + nombre.replaceAll("\\s+", "_") + ".xlsx",
-                        () -> reporteService.generarExcelFixture(nombre, partidosActuales));
-                anchorExcel.setHref(excelResource);
+                        () -> reporteService.generarExcelFixture(nombre, partidosActuales)));
             }
         });
 
         HorizontalLayout toolbar = new HorizontalLayout(torneo, anchorPdf, anchorExcel);
-        toolbar.setAlignItems(Alignment.END);
+        toolbar.setAlignItems(FlexComponent.Alignment.END);
 
-        add(toolbar, grid);
+        add(toolbar, contenedorTarjetas);
         setPadding(true);
     }
 
-    private void configurarGrid() {
-        grid.addColumn(PartidoResponse::fecha).setHeader("Fecha").setSortable(true);
-        grid.addColumn(PartidoResponse::hora).setHeader("Hora");
-        grid.addColumn(PartidoResponse::equipoLocal).setHeader("Local");
-        grid.addColumn(PartidoResponse::equipoVisitante).setHeader("Visitante");
-        grid.addColumn(PartidoResponse::cancha).setHeader("Cancha");
+    private void renderizarTarjetas() {
+        contenedorTarjetas.removeAll();
 
-        grid.addComponentColumn(partido -> {
-            Span badge = new Span(partido.estado());
-            if (partido.jugado()) {
-                badge.getElement().getThemeList().add("badge success");
-            } else {
-                boolean esPasado = partido.fecha().isBefore(java.time.LocalDate.now());
-                badge.getElement().getThemeList().add(esPasado ? "badge error" : "badge");
+        // Agrupar por fase
+        Map<String, List<PartidoResponse>> porFase = new java.util.LinkedHashMap<>();
+        for (PartidoResponse p : partidosActuales) {
+            String fase = p.fase() != null ? p.fase() : "PARTIDOS";
+            porFase.computeIfAbsent(fase, k -> new java.util.ArrayList<>()).add(p);
+        }
+
+        boolean multiFase = porFase.size() > 1;
+
+        for (Map.Entry<String, List<PartidoResponse>> entry : porFase.entrySet()) {
+            if (multiFase) {
+                com.vaadin.flow.component.html.H3 tituloFase =
+                        new com.vaadin.flow.component.html.H3(entry.getKey());
+                tituloFase.getStyle()
+                        .set("color", "#1a237e")
+                        .set("border-bottom", "2px solid var(--lumo-primary-color)")
+                        .set("padding-bottom", "4px")
+                        .set("width", "100%")
+                        .set("margin-top", "16px");
+                contenedorTarjetas.add(tituloFase);
             }
-            return badge;
-        }).setHeader("Estado");
+            for (PartidoResponse p : entry.getValue()) {
+                contenedorTarjetas.add(crearMatchCard(p));
+            }
+        }
+    }
 
-        grid.addComponentColumn(partido -> {
-            if (!esAdminOOrganizador()) return new Span();
-            Button btn = new Button(partido.jugado() ? "✏️ Editar" : "⚽ Resultado");
-            btn.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-            btn.addClickListener(e -> abrirDialogoResultado(partido));
-            return btn;
-        }).setHeader("Acciones");
+    private VerticalLayout crearMatchCard(PartidoResponse partido) {
+        // Badge de estado
+        Span estadoBadge = new Span(partido.estado());
+        if (partido.jugado()) {
+            estadoBadge.getElement().getThemeList().add("badge success");
+        } else {
+            boolean pasado = partido.fecha().isBefore(java.time.LocalDate.now());
+            estadoBadge.getElement().getThemeList().add(pasado ? "badge error" : "badge");
+        }
 
-        grid.setWidthFull();
+        // Marcador
+        Span localNombre = new Span(partido.equipoLocal());
+        localNombre.addClassName("match-team");
+
+        Span marcador = new Span(partido.jugado() && partido.golesLocal() != null
+                ? partido.golesLocal() + " - " + partido.golesVisitante()
+                : "vs");
+        marcador.addClassName("match-score");
+
+        Span visitanteNombre = new Span(partido.equipoVisitante());
+        visitanteNombre.addClassName("match-team");
+
+        HorizontalLayout enfrentamiento = new HorizontalLayout(localNombre, marcador, visitanteNombre);
+        enfrentamiento.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        enfrentamiento.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        enfrentamiento.setWidthFull();
+        enfrentamiento.setSpacing(true);
+
+        // Info inferior
+        Paragraph info = new Paragraph("📅 " + partido.fecha() + "  ⏰ " + partido.hora() + "  📍 " + partido.cancha());
+        info.addClassName("match-info");
+
+        HorizontalLayout footer = new HorizontalLayout(estadoBadge);
+        footer.setWidthFull();
+        footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        footer.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        if (esAdminOOrganizador()) {
+            Button btnResultado = new Button(partido.jugado() ? "✏️" : "⚽",
+                    e -> abrirDialogoResultado(partido));
+            btnResultado.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+            footer.add(btnResultado);
+        }
+
+        VerticalLayout card = new VerticalLayout(enfrentamiento, info, footer);
+        card.addClassName("match-card");
+        card.setPadding(true);
+        card.setSpacing(false);
+        return card;
     }
 
     private void abrirDialogoResultado(PartidoResponse partido) {
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Registrar resultado");
-
-        Span info = new Span(partido.equipoLocal() + " vs " + partido.equipoVisitante());
-        info.getStyle().set("font-weight", "bold");
+        dialog.setHeaderTitle("⚽ Resultado: " + partido.equipoLocal() + " vs " + partido.equipoVisitante());
 
         IntegerField golesLocal = new IntegerField(partido.equipoLocal());
         golesLocal.setMin(0);
@@ -155,14 +201,15 @@ public class FixtureView extends VerticalLayout {
         golesVisitante.setStepButtonsVisible(true);
 
         Button btnGuardar = new Button("Guardar", e -> {
+            int gl = golesLocal.getValue() != null ? golesLocal.getValue() : 0;
+            int gv = golesVisitante.getValue() != null ? golesVisitante.getValue() : 0;
             try {
-                partidoService.registrarResultado(partido.id(),
-                        golesLocal.getValue(), golesVisitante.getValue());
+                partidoService.registrarResultado(partido.id(), gl, gv);
                 Notification n = Notification.show("Resultado guardado.");
                 n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 if (torneoSeleccionado != null) {
                     partidosActuales = partidoService.getPartidos(torneoSeleccionado.id());
-                    grid.setItems(partidosActuales);
+                    renderizarTarjetas();
                 }
                 dialog.close();
             } catch (IllegalArgumentException ex) {
@@ -173,7 +220,7 @@ public class FixtureView extends VerticalLayout {
         btnGuardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Button btnCancelar = new Button("Cancelar", e -> dialog.close());
-        dialog.add(new VerticalLayout(info,
+        dialog.add(new VerticalLayout(
                 new HorizontalLayout(golesLocal, golesVisitante),
                 new HorizontalLayout(btnGuardar, btnCancelar)));
         dialog.open();

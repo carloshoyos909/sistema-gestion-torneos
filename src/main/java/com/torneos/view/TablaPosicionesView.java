@@ -9,6 +9,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
@@ -42,7 +43,7 @@ public class TablaPosicionesView extends VerticalLayout {
         this.tablaPosicionesService = tablaPosicionesService;
         this.reporteService = reporteService;
 
-        H2 titulo = new H2("🏆 Tabla de Posiciones");
+        H2 titulo = new H2("🥇 Tabla de Posiciones");
 
         ComboBox<TorneoResponse> torneo = new ComboBox<>("Torneo");
         torneo.setItemLabelGenerator(TorneoResponse::nombre);
@@ -81,7 +82,6 @@ public class TablaPosicionesView extends VerticalLayout {
                 grid.setItems(datosActuales);
                 btnPdf.setEnabled(true);
                 btnExcel.setEnabled(true);
-
                 String nombre = torneoSeleccionado.nombre();
                 anchorPdf.setHref(new StreamResource(
                         "posiciones_" + nombre.replaceAll("\\s+", "_") + ".pdf",
@@ -101,16 +101,41 @@ public class TablaPosicionesView extends VerticalLayout {
     }
 
     private void configurarGrid() {
-        // Columna Pos con badge visual
-        grid.addComponentColumn(t -> {
-            Span badge = new Span(String.valueOf(t.getPosicion()));
-            if (t.getPosicion() == 1) badge.getElement().getThemeList().add("badge success");
-            else if (t.getPosicion() == 2) badge.getElement().getThemeList().add("badge contrast");
-            else badge.getElement().getThemeList().add("badge");
-            return badge;
-        }).setHeader("Pos").setWidth("70px").setFlexGrow(0);
+        grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
-        grid.addColumn(TablaPosicionesDTO::getEquipo).setHeader("Equipo").setSortable(true);
+        // Pos con badge especial para el líder
+        grid.addComponentColumn(t -> {
+            HorizontalLayout celda = new HorizontalLayout();
+            celda.setAlignItems(FlexComponent.Alignment.CENTER);
+            celda.setSpacing(true);
+
+            if (t.getPosicion() == 1) {
+                Span trofeo = new Span("🏆");
+                Span badge = new Span("1");
+                badge.getElement().getThemeList().add("badge success");
+                badge.getStyle().set("font-weight", "700");
+                celda.add(trofeo, badge);
+            } else if (t.getPosicion() == 2) {
+                Span badge = new Span("2");
+                badge.getElement().getThemeList().add("badge contrast");
+                celda.add(badge);
+            } else {
+                Span badge = new Span(String.valueOf(t.getPosicion()));
+                badge.getElement().getThemeList().add("badge");
+                celda.add(badge);
+            }
+            return celda;
+        }).setHeader("Pos").setWidth("90px").setFlexGrow(0);
+
+        // Nombre del equipo — el líder en negrita y color dorado
+        grid.addComponentColumn(t -> {
+            Span nombre = new Span(t.getEquipo());
+            if (t.getPosicion() == 1) {
+                nombre.getStyle().set("font-weight", "700").set("color", "#e65100");
+            }
+            return nombre;
+        }).setHeader("Equipo").setSortable(true).setFlexGrow(2);
+
         grid.addColumn(TablaPosicionesDTO::getPartidosJugados).setHeader("PJ").setWidth("60px").setFlexGrow(0);
         grid.addColumn(TablaPosicionesDTO::getPartidosGanados).setHeader("PG").setWidth("60px").setFlexGrow(0);
         grid.addColumn(TablaPosicionesDTO::getPartidosEmpatados).setHeader("PE").setWidth("60px").setFlexGrow(0);
@@ -125,9 +150,14 @@ public class TablaPosicionesView extends VerticalLayout {
 
         grid.addComponentColumn(t -> {
             Span pts = new Span(String.valueOf(t.getPuntos()));
-            pts.getStyle().set("font-weight", "bold");
+            pts.getStyle().set("font-weight", "700")
+                    .set("color", t.getPosicion() == 1 ? "#00a651" : "#1a237e");
             return pts;
-        }).setHeader("PTS").setWidth("70px").setFlexGrow(0).setSortable(false);
+        }).setHeader("PTS").setWidth("70px").setFlexGrow(0);
+
+        // Clase CSS para resaltar la fila del líder
+        grid.setClassNameGenerator(t ->
+                t.getPosicion() == 1 ? "fila-lider" : "");
 
         grid.setWidthFull();
     }
