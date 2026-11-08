@@ -48,7 +48,6 @@ html, body, vaadin-app-layout {
 
 /* ─── 4. Navbar (encabezado) ─────────────────────────────── */
 [part="navbar"] {
-    background: linear-gradient(90deg, #1a237e 0%, #0d47a1 100%) !important;
     color: #ffffff !important;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
@@ -76,12 +75,13 @@ vaadin-side-nav-item::part(item) {
     border-radius: var(--lumo-border-radius-m) !important;
     margin: 2px 0 !important;
     font-weight: 500;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s, color 0.2s, transform 0.15s ease-in-out !important;
 }
 
 vaadin-side-nav-item::part(item):hover {
     background: rgba(255,255,255,0.15) !important;
     color: #ffffff !important;
+    transform: translateX(4px) scale(1.01);
 }
 
 vaadin-side-nav-item[active]::part(item) {
@@ -170,7 +170,7 @@ vaadin-grid {
 }
 
 vaadin-grid::part(header-cell) {
-    background: #1a237e !important;
+    background: var(--lumo-primary-color) !important;
     color: #ffffff !important;
     font-weight: 600 !important;
     font-size: 0.85rem !important;
@@ -378,4 +378,44 @@ vaadin-avatar {
     border: none !important;
     border-top: 1px solid rgba(255,255,255,0.15) !important;
     margin: 8px 0 !important;
+}
+
+/* ─── 22. Animaciones Globales (Navbar, Perfil, Botones) ─── */
+vaadin-app-layout::part(navbar) {
+    background-color: var(--lumo-primary-color);
+    border-bottom: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); 
+}
+
+.header-titulo {
+    transition: transform 0.2s ease-in-out, opacity 0.2s;
+}
+
+.header-titulo:hover {
+    transform: scale(1.02);
+    opacity: 0.9;
+}
+
+.perfil-usuario {
+    transition: transform 0.2s ease, filter 0.2s;
+    cursor: pointer;
+}
+
+.perfil-usuario:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.15);
+}
+
+vaadin-button {
+    transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out !important;
+}
+
+vaadin-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    filter: brightness(1.1);
+    cursor: pointer;
+}
+
+vaadin-button:active {
+    transform: translateY(1px) scale(0.98);
 }

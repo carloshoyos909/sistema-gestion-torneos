@@ -116,7 +116,7 @@ public class EquiposView extends VerticalLayout {
                 av.getStyle().set("width", "32px").set("height", "32px").set("font-size", "0.8rem");
 
                 Span dorsal = new Span(String.valueOf(i + 1));
-                dorsal.getStyle().set("font-weight", "600").set("color", "#1a237e")
+                dorsal.getStyle().set("font-weight", "600").set("color", "#00a651")
                         .set("min-width", "24px").set("text-align", "center");
 
                 Span nombreJugador = new Span(nombre);

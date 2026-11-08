@@ -32,6 +32,7 @@ public class MainView extends AppLayout implements RouterLayout {
 
     private void crearEncabezado() {
         DrawerToggle toggle = new DrawerToggle();
+        toggle.getStyle().set("color", "#ffffff");
 
         H1 titulo = new H1("Gestión de Torneos");
         titulo.getStyle()
@@ -39,6 +40,8 @@ public class MainView extends AppLayout implements RouterLayout {
                 .set("margin", "0")
                 .set("color", "#ffffff")
                 .set("font-weight", "700");
+
+        titulo.addClassName("header-titulo");
 
         HorizontalLayout izquierda = new HorizontalLayout(toggle, titulo);
         izquierda.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
@@ -71,6 +74,8 @@ public class MainView extends AppLayout implements RouterLayout {
         derecha.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         derecha.setSpacing(true);
         derecha.getStyle().set("margin-left", "auto").set("margin-right", "var(--lumo-space-m)");
+
+        derecha.addClassName("perfil-usuario");
 
         HorizontalLayout navbar = new HorizontalLayout(izquierda, derecha);
         navbar.setWidthFull();
