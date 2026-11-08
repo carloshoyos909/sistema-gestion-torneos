@@ -1,70 +1,51 @@
 package com.torneos.service;
 
-import java.util.List;
-
+import com.torneos.model.Torneo;
+import com.torneos.model.Usuario;
+import com.torneos.repository.TorneoRepository;
+import com.torneos.repository.UsuarioRepository;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.torneos.dto.TorneoResponse;
-import com.torneos.model.FormatoTorneo;
-import com.torneos.model.Torneo;
-import com.torneos.repository.TorneoRepository;
 
 @Service
 public class TorneoService {
 
     private final TorneoRepository torneoRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public TorneoService(TorneoRepository torneoRepository) {
+    public TorneoService(TorneoRepository torneoRepository, UsuarioRepository usuarioRepository) {
         this.torneoRepository = torneoRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
-    @Transactional
-    public TorneoResponse crearTorneo(String nombre, String deporte, String categoria, FormatoTorneo formato) {
-        String nombreNormalizado = nombre.trim();
+    private Usuario getUsuarioActual() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+    }
 
-        if (torneoRepository.existsByNombreIgnoreCase(nombreNormalizado)) {
-            throw new IllegalArgumentException("El nombre del torneo ya se encuentra registrado.");
+    @Transactional(readOnly = true)
+    public Torneo obtenerTorneoPorId(Long torneoId) {
+        Torneo torneo = torneoRepository.findById(torneoId)
+                .orElseThrow(() -> new IllegalArgumentException("Torneo no encontrado"));
+
+        Usuario usuarioActual = getUsuarioActual();
+
+        // Validación IDOR para VISUALIZACIÓN (Lectura)
+        if (!torneo.getUsuario().getId().equals(usuarioActual.getId())) {
+            throw new AccessDeniedException("No tienes permisos para visualizar este torneo.");
         }
 
-        Torneo torneo = new Torneo(nombreNormalizado, deporte.trim(), categoria.trim(), formato);
-        return toResponse(torneoRepository.save(torneo));
+        return torneo;
     }
 
     @Transactional
-    public TorneoResponse crearTorneo(String nombre, String deporte, String categoria) {
-        return crearTorneo(nombre, deporte, categoria, FormatoTorneo.LIGA);
-    }
+    public void eliminarTorneo(Long torneoId) {
+        // Reutilizamos la validación de propiedad o la aplicamos directamente
+        Torneo torneo = obtenerTorneoPorId(torneoId);
 
-    @Transactional(readOnly = true)
-    public List<TorneoResponse> getTorneos() {
-        return torneoRepository.findAll().stream()
-                .map(this::toResponse)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public Torneo buscarEntidadPorId(Long id) {
-        return torneoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("El torneo no existe."));
-    }
-
-    @Transactional(readOnly = true)
-    public List<TorneoResponse> getTorneosActivos() {
-        return torneoRepository.findAll().stream()
-                .filter(Torneo::isActivo)
-                .map(this::toResponse)
-                .toList();
-    }
-
-    private TorneoResponse toResponse(Torneo torneo) {
-        return new TorneoResponse(
-                torneo.getId(),
-                torneo.getNombre(),
-                torneo.getDeporte(),
-                torneo.getCategoria(),
-                torneo.isActivo(),
-                torneo.getFormato()
-        );
+        torneoRepository.delete(torneo);
     }
 }
