@@ -2,10 +2,20 @@ package com.torneos.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.util.List;
 
-public record EquipoRequest(
-        @NotBlank @Size(max = 100) String nombre,
-        List<@NotBlank @Size(max = 120) String> jugadores
-) {
+public class EquipoRequest {
+
+    @NotBlank(message = "El nombre del equipo no puede estar vacío")
+    @Size(min = 2, max = 50, message = "El nombre del equipo debe tener entre 2 y 50 caracteres")
+    private String nombre;
+
+    public EquipoRequest() {}
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 }
