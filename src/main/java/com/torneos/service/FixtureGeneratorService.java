@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Collectors;
 
 @Service
 public class FixtureGeneratorService {
@@ -296,8 +295,9 @@ public class FixtureGeneratorService {
         String sufijo = idaYVuelta ? " (ida)" : "";
         if (numEquipos >= 16) return "DIECISEISAVOS" + sufijo;
         if (numEquipos >= 8)  return "OCTAVOS" + sufijo;
-        if (numEquipos >= 4)  return "CUARTOS DE FINAL" + sufijo;
-        return "SEMIFINAL" + sufijo;
+        if (numEquipos >= 6)  return "CUARTOS DE FINAL" + sufijo;
+        if (numEquipos >= 4)  return "SEMIFINAL" + sufijo;
+        return "FINAL" + sufijo;
     }
 
     private PartidoResponse toResponse(Partido p) {

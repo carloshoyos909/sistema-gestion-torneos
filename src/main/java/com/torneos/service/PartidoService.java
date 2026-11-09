@@ -14,7 +14,6 @@ import com.torneos.model.Equipo;
 import com.torneos.model.Partido;
 import com.torneos.model.Torneo;
 import com.torneos.repository.PartidoRepository;
-import com.torneos.repository.UsuarioRepository;
 
 @Service
 public class PartidoService {
@@ -22,16 +21,13 @@ public class PartidoService {
     private final PartidoRepository partidoRepository;
     private final TorneoService torneoService;
     private final EquipoService equipoService;
-    private final UsuarioRepository usuarioRepository;
 
     public PartidoService(PartidoRepository partidoRepository,
                           TorneoService torneoService,
-                          EquipoService equipoService,
-                          UsuarioRepository usuarioRepository) {
+                          EquipoService equipoService) {
         this.partidoRepository = partidoRepository;
         this.torneoService = torneoService;
         this.equipoService = equipoService;
-        this.usuarioRepository = usuarioRepository;
     }
 
     // ── Programar partido — valida propietario del torneo ─────────────────

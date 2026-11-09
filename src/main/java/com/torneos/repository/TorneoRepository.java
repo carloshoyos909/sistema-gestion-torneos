@@ -9,5 +9,4 @@ import com.torneos.model.Torneo;
 public interface TorneoRepository extends JpaRepository<Torneo, Long> {
     boolean existsByNombreIgnoreCase(String nombre);
     List<Torneo> findByCreadorUsername(String username);
-    List<Torneo> findByCreadorUsernameAndActivoTrue(String username);
 }

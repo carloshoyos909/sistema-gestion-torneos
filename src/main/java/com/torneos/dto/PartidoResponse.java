@@ -22,6 +22,6 @@ public record PartidoResponse(
         if (jugado && golesLocal != null && golesVisitante != null) {
             return golesLocal + " - " + golesVisitante;
         }
-        return java.time.LocalDate.now().isAfter(fecha) ? "Pendiente" : "Próximo";
+        return fecha != null && java.time.LocalDate.now().isAfter(fecha) ? "Pendiente" : "Próximo";
     }
 }
