@@ -1,0 +1,18 @@
+:host {
+    --lumo-primary-color:       #00a651;
+    --lumo-primary-text-color:  #00a651;
+}
+
+/* Item activo → verde, NO azul Lumo */
+:host([active]) [part="item"] {
+    background-color: #00a651 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 8px rgba(0, 166, 81, 0.35) !important;
+}
+
+[part="item"] {
+    border-radius: 10px !important;
+    transition: background 0.15s, color 0.15s !important;
+}

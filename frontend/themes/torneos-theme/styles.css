@@ -1,69 +1,57 @@
 /* ═══════════════════════════════════════════════════════════════════
    TEMA: Sistema de Gestión de Torneos
    Paleta: Verde #00a651  ·  Azul marino #1a237e  ·  Blanco #ffffff
+
+   NOTA: Las variables Lumo se sobreescriben POR COMPONENTE en
+   frontend/themes/torneos-theme/components/*.css  porque los web
+   components de Vaadin usan Shadow DOM y no heredan :root
+   directamente para todos sus estilos internos.
    ═══════════════════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* ─── Variables globales ─────────────────────────────────────────── */
+/* ─── Variables en el documento principal ───────────────────────── */
 :root {
-    /* Tipografía */
-    --lumo-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-
-    /* ⚠️  Color primario → VERDE. Esto reemplaza el azul Lumo en TODO el tema */
-    --lumo-primary-color:           #00a651;
-    --lumo-primary-color-50pct:     rgba(0, 166, 81, 0.5);
-    --lumo-primary-color-10pct:     rgba(0, 166, 81, 0.1);
-    --lumo-primary-text-color:      #00a651;
-    --lumo-primary-contrast-color:  #ffffff;
-
-    /* Textos */
-    --lumo-base-color:              #f8f9fa;
-    --lumo-body-text-color:         #1a1a2e;
-    --lumo-secondary-text-color:    #5f6368;
-    --lumo-disabled-text-color:     #adb5bd;
-    --lumo-header-text-color:       #1a237e;
-
-    /* Bordes */
-    --lumo-contrast-5pct:           rgba(0, 0, 0, 0.05);
-    --lumo-contrast-10pct:          rgba(0, 0, 0, 0.10);
-    --lumo-contrast-20pct:          rgba(0, 0, 0, 0.15);
-    --lumo-contrast-30pct:          rgba(0, 0, 0, 0.22);
-
-    /* Bordes redondeados */
-    --lumo-border-radius-s:         6px;
-    --lumo-border-radius-m:         10px;
-    --lumo-border-radius-l:         16px;
-
-    /* Sombras */
-    --lumo-box-shadow-s:  0 2px 8px rgba(0,0,0,0.08);
-    --lumo-box-shadow-m:  0 4px 16px rgba(0,0,0,0.12);
-    --lumo-box-shadow-l:  0 8px 32px rgba(0,0,0,0.16);
+    --lumo-font-family:            'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --lumo-primary-color:          #00a651;
+    --lumo-primary-color-50pct:    rgba(0, 166, 81, 0.5);
+    --lumo-primary-color-10pct:    rgba(0, 166, 81, 0.1);
+    --lumo-primary-text-color:     #00a651;
+    --lumo-primary-contrast-color: #ffffff;
+    --lumo-base-color:             #f8f9fa;
+    --lumo-body-text-color:        #1a1a2e;
+    --lumo-secondary-text-color:   #5f6368;
+    --lumo-disabled-text-color:    #adb5bd;
+    --lumo-contrast-5pct:          rgba(0,0,0,0.05);
+    --lumo-contrast-10pct:         rgba(0,0,0,0.10);
+    --lumo-contrast-20pct:         rgba(0,0,0,0.15);
+    --lumo-border-radius-s:        6px;
+    --lumo-border-radius-m:        10px;
+    --lumo-border-radius-l:        16px;
+    --lumo-box-shadow-s:           0 2px 8px rgba(0,0,0,0.08);
+    --lumo-box-shadow-m:           0 4px 16px rgba(0,0,0,0.12);
+    --lumo-box-shadow-l:           0 8px 32px rgba(0,0,0,0.16);
 }
 
-/* ─── Fondo general ──────────────────────────────────────────────── */
+/* ─── Fondo y tipografía ─────────────────────────────────────────── */
 html, body {
-    background-color: #f0f2f5 !important;
+    background-color: #f0f2f5;
     font-family: var(--lumo-font-family);
+    color: #1a1a2e;
 }
 
-/* ─── App Layout ─────────────────────────────────────────────────── */
-vaadin-app-layout {
-    background-color: #f0f2f5 !important;
+h1, h2, h3, h4 {
+    color: #1a237e;
+    font-family: var(--lumo-font-family);
+    margin-top: 0;
 }
 
 /* ─── Navbar ─────────────────────────────────────────────────────── */
 vaadin-app-layout::part(navbar) {
     background-color: #00a651 !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.20) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18) !important;
 }
 
-/* Forzar todos los textos del navbar a blanco */
-vaadin-app-layout::part(navbar) * {
-    color: #ffffff !important;
-}
-
-/* DrawerToggle (el ícono hamburguesa) */
 vaadin-drawer-toggle {
     color: #ffffff !important;
 }
@@ -71,7 +59,7 @@ vaadin-drawer-toggle::part(button) {
     color: #ffffff !important;
 }
 
-/* ─── Sidebar (drawer) ───────────────────────────────────────────── */
+/* ─── Sidebar ────────────────────────────────────────────────────── */
 vaadin-app-layout::part(drawer) {
     background-color: #1a237e !important;
     border-right: none !important;
@@ -83,194 +71,45 @@ vaadin-side-nav {
 
 vaadin-side-nav-item::part(item) {
     color: rgba(255,255,255,0.82) !important;
-    border-radius: var(--lumo-border-radius-m) !important;
+    border-radius: 10px !important;
     margin: 1px 0 !important;
     font-weight: 500 !important;
-    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
     padding: 8px 12px !important;
+    transition: background 0.15s ease, color 0.15s ease !important;
 }
 
 vaadin-side-nav-item::part(item):hover {
-    background: rgba(255,255,255,0.12) !important;
+    background-color: rgba(255,255,255,0.12) !important;
     color: #ffffff !important;
-    transform: translateX(3px) !important;
 }
 
-/* ⚠️  Item activo → verde, NO azul */
 vaadin-side-nav-item[active]::part(item) {
-    background: #00a651 !important;
-    color: #ffffff !important;
-    font-weight: 600 !important;
-    box-shadow: 0 2px 8px rgba(0,166,81,0.35) !important;
-}
-
-/* ─── Botones ────────────────────────────────────────────────────── */
-
-/* PRIMARY → verde #00a651 */
-vaadin-button[theme~="primary"]::part(label),
-vaadin-button[theme~="primary"]::part(prefix),
-vaadin-button[theme~="primary"]::part(suffix) {
-    color: #ffffff !important;
-}
-vaadin-button[theme~="primary"]::part(button) {
     background-color: #00a651 !important;
     color: #ffffff !important;
-    border-radius: var(--lumo-border-radius-m) !important;
     font-weight: 600 !important;
-    border: none !important;
-}
-vaadin-button[theme~="primary"]::part(button):hover {
-    background-color: #00884a !important;
-}
-
-/* SUCCESS → verde oscuro */
-vaadin-button[theme~="success"]::part(button) {
-    background-color: #1e7e34 !important;
-    color: #ffffff !important;
-    border-radius: var(--lumo-border-radius-m) !important;
-    font-weight: 600 !important;
-    border: none !important;
-}
-vaadin-button[theme~="success"]::part(label),
-vaadin-button[theme~="success"]::part(prefix) {
-    color: #ffffff !important;
-}
-
-/* CONTRAST → azul marino */
-vaadin-button[theme~="contrast"]::part(button) {
-    background-color: #1a237e !important;
-    color: #ffffff !important;
-    border-radius: var(--lumo-border-radius-m) !important;
-    font-weight: 600 !important;
-    border: none !important;
-}
-vaadin-button[theme~="contrast"]::part(label),
-vaadin-button[theme~="contrast"]::part(prefix) {
-    color: #ffffff !important;
-}
-
-/* ERROR → rojo */
-vaadin-button[theme~="error"]::part(button) {
-    border-radius: var(--lumo-border-radius-m) !important;
-}
-
-/* TERTIARY → sin fondo, texto verde */
-vaadin-button[theme~="tertiary"]::part(button) {
-    border-radius: var(--lumo-border-radius-m) !important;
-    color: var(--lumo-primary-color) !important;
-}
-
-/* SMALL */
-vaadin-button[theme~="small"]::part(button) {
-    border-radius: var(--lumo-border-radius-s) !important;
-}
-
-/* Deshabilitado */
-vaadin-button[disabled]::part(button) {
-    opacity: 0.40 !important;
-    cursor: not-allowed !important;
-}
-
-/* ─── Campos de formulario ───────────────────────────────────────── */
-vaadin-text-field::part(input-field),
-vaadin-password-field::part(input-field),
-vaadin-combo-box::part(input-field),
-vaadin-date-picker::part(input-field),
-vaadin-time-picker::part(input-field),
-vaadin-text-area::part(input-field),
-vaadin-integer-field::part(input-field),
-vaadin-number-field::part(input-field) {
-    border-radius: var(--lumo-border-radius-m) !important;
-    border: 1.5px solid rgba(0,0,0,0.15) !important;
-    background: #ffffff !important;
-    transition: border-color 0.2s !important;
-}
-
-vaadin-text-field[focused]::part(input-field),
-vaadin-password-field[focused]::part(input-field),
-vaadin-combo-box[focused]::part(input-field),
-vaadin-date-picker[focused]::part(input-field),
-vaadin-time-picker[focused]::part(input-field),
-vaadin-text-area[focused]::part(input-field),
-vaadin-integer-field[focused]::part(input-field),
-vaadin-number-field[focused]::part(input-field) {
-    border-color: #00a651 !important;
-    box-shadow: 0 0 0 3px rgba(0,166,81,0.12) !important;
-}
-
-/* Labels */
-vaadin-text-field::part(label),
-vaadin-password-field::part(label),
-vaadin-combo-box::part(label),
-vaadin-date-picker::part(label),
-vaadin-time-picker::part(label),
-vaadin-text-area::part(label),
-vaadin-integer-field::part(label),
-vaadin-number-field::part(label) {
-    font-weight: 600 !important;
-    color: #1a1a2e !important;
-}
-
-/* ComboBox caret/toggle button — quitar azul Lumo */
-vaadin-combo-box::part(toggle-button) {
-    color: #5f6368 !important;
-}
-
-/* TimePicker y DatePicker toggle buttons */
-vaadin-time-picker::part(toggle-button),
-vaadin-date-picker::part(toggle-button) {
-    color: #00a651 !important;
 }
 
 /* ─── Grids ──────────────────────────────────────────────────────── */
 vaadin-grid {
-    border-radius: var(--lumo-border-radius-m) !important;
-    box-shadow: var(--lumo-box-shadow-s) !important;
-    background: #ffffff !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
     border: none !important;
 }
 
 vaadin-grid::part(header-cell) {
-    background: #00a651 !important;
+    background-color: #00a651 !important;
     color: #ffffff !important;
     font-weight: 600 !important;
     font-size: 0.85rem !important;
-    letter-spacing: 0.03em !important;
+    letter-spacing: 0.02em !important;
+}
+
+vaadin-grid-sorter {
+    color: rgba(255,255,255,0.9) !important;
 }
 
 vaadin-grid::part(row):hover {
-    background: rgba(0,166,81,0.06) !important;
-}
-
-/* Sorter icon en cabecera */
-vaadin-grid-sorter {
-    color: rgba(255,255,255,0.85) !important;
-}
-vaadin-grid-sorter[direction] {
-    color: #ffffff !important;
-}
-
-/* ─── Diálogos ───────────────────────────────────────────────────── */
-vaadin-dialog-overlay::part(overlay) {
-    border-radius: var(--lumo-border-radius-l) !important;
-    box-shadow: var(--lumo-box-shadow-l) !important;
-}
-
-vaadin-dialog-overlay::part(header) {
-    background: #1a237e !important;
-    border-radius: var(--lumo-border-radius-l) var(--lumo-border-radius-l) 0 0 !important;
-    padding: 16px 20px !important;
-}
-
-vaadin-dialog-overlay::part(title) {
-    color: #ffffff !important;
-    font-weight: 700 !important;
-}
-
-/* Botón de cierre del diálogo */
-vaadin-dialog-overlay::part(header-content) vaadin-button::part(button) {
-    color: rgba(255,255,255,0.8) !important;
-    background: transparent !important;
+    background-color: rgba(0,166,81,0.05) !important;
 }
 
 /* ─── Badges ─────────────────────────────────────────────────────── */
@@ -281,36 +120,29 @@ vaadin-dialog-overlay::part(header-content) vaadin-button::part(button) {
     font-weight: 600 !important;
     font-size: 0.78rem !important;
     padding: 2px 10px !important;
-    /* Neutro: gris oscuro sobre fondo claro — buen contraste */
-    background: #e9ecef !important;
+    background-color: #e9ecef !important;
     color: #343a40 !important;
     border: none !important;
 }
 
 [theme~="badge"][theme~="success"] {
-    background: #d4edda !important;
+    background-color: #d4edda !important;
     color: #155724 !important;
 }
 
 [theme~="badge"][theme~="error"] {
-    background: #fdecea !important;
+    background-color: #fdecea !important;
     color: #b71c1c !important;
 }
 
 [theme~="badge"][theme~="contrast"] {
-    background: #e8eaf6 !important;
+    background-color: #e8eaf6 !important;
     color: #1a237e !important;
 }
 
 [theme~="badge"][theme~="primary"] {
-    background: rgba(0,166,81,0.12) !important;
+    background-color: rgba(0,166,81,0.12) !important;
     color: #00703a !important;
-}
-
-/* Badge de rol en el navbar — sobreescribir colores heredados */
-.perfil-usuario [theme~="badge"] {
-    font-size: 0.68rem !important;
-    padding: 1px 8px !important;
 }
 
 /* ─── Login ──────────────────────────────────────────────────────── */
@@ -326,29 +158,23 @@ vaadin-dialog-overlay::part(header-content) vaadin-button::part(button) {
     text-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-.login-view vaadin-login-form {
-    border-radius: var(--lumo-border-radius-l) !important;
-    box-shadow: var(--lumo-box-shadow-l) !important;
-    background: #ffffff !important;
-}
-
 .login-view a {
     color: rgba(255,255,255,0.92) !important;
 }
 
 .login-view p {
-    color: rgba(255,255,255,0.85) !important;
-    font-size: 0.85rem !important;
+    color: rgba(255,255,255,0.88) !important;
     max-width: 360px;
     text-align: center;
+    font-size: 0.85rem;
 }
 
 /* ─── Tarjetas del Home ──────────────────────────────────────────── */
 .tarjeta-home {
     border: 1.5px solid rgba(0,0,0,0.08) !important;
-    border-radius: var(--lumo-border-radius-l) !important;
-    background: #ffffff !important;
-    box-shadow: var(--lumo-box-shadow-s) !important;
+    border-radius: 16px !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
     cursor: pointer !important;
     min-width: 220px;
@@ -358,15 +184,15 @@ vaadin-dialog-overlay::part(header-content) vaadin-button::part(button) {
 
 .tarjeta-home:hover {
     transform: translateY(-4px) !important;
-    box-shadow: var(--lumo-box-shadow-m) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
     border-color: #00a651 !important;
 }
 
-/* ─── Match Cards (Fixture) ──────────────────────────────────────── */
+/* ─── Match Cards ────────────────────────────────────────────────── */
 .match-card {
-    background: #ffffff !important;
-    border-radius: var(--lumo-border-radius-l) !important;
-    box-shadow: var(--lumo-box-shadow-s) !important;
+    background-color: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
     border: 1px solid rgba(0,0,0,0.08) !important;
     min-width: 280px;
     max-width: 340px;
@@ -375,7 +201,7 @@ vaadin-dialog-overlay::part(header-content) vaadin-button::part(button) {
 }
 
 .match-card:hover {
-    box-shadow: var(--lumo-box-shadow-m) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
     transform: translateY(-2px);
 }
 
@@ -392,8 +218,8 @@ vaadin-dialog-overlay::part(header-content) vaadin-button::part(button) {
     font-weight: 700 !important;
     color: #00a651 !important;
     padding: 2px 12px !important;
-    background: rgba(0,166,81,0.10) !important;
-    border-radius: var(--lumo-border-radius-m) !important;
+    background-color: rgba(0,166,81,0.10) !important;
+    border-radius: 10px !important;
     min-width: 60px;
     text-align: center;
 }
@@ -405,36 +231,63 @@ vaadin-dialog-overlay::part(header-content) vaadin-button::part(button) {
     text-align: center;
 }
 
-/* ─── Tabla de posiciones: fila líder ────────────────────────────── */
+/* ─── Tabla de posiciones: líder ─────────────────────────────────── */
 .fila-lider {
     background: linear-gradient(
         90deg,
         rgba(0,166,81,0.07) 0%,
-        rgba(255,200,0,0.05) 100%
+        rgba(255,200,0,0.04) 100%
     ) !important;
 }
 
-/* ─── KPI Cards ──────────────────────────────────────────────────── */
+/* ─── KPI Cards (Admin) ──────────────────────────────────────────── */
 .kpi-card {
-    border-radius: var(--lumo-border-radius-l) !important;
-    box-shadow: var(--lumo-box-shadow-s) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
     padding: 16px !important;
     flex: 1;
     min-width: 130px;
     text-align: center;
 }
 
-/* ─── Notificaciones ─────────────────────────────────────────────── */
-vaadin-notification-card::part(overlay) {
-    border-radius: var(--lumo-border-radius-m) !important;
-    font-weight: 500 !important;
+/* ─── Botones de descarga (Anchor estilizado como botón) ─────────── */
+.btn-descarga {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 7px 14px !important;
+    border-radius: 8px !important;
+    font-family: var(--lumo-font-family) !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    transition: filter 0.15s ease !important;
+    border: none !important;
+    line-height: 1.4 !important;
 }
 
-/* ─── Scrollbar personalizado ────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #f0f2f5; }
-::-webkit-scrollbar-thumb { background: #b0bec5; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #78909c; }
+.btn-descarga:hover {
+    filter: brightness(1.10) !important;
+    text-decoration: none !important;
+}
+
+.btn-descarga-pdf {
+    background-color: #1a237e !important;
+    color: #ffffff !important;
+}
+
+.btn-descarga-excel {
+    background-color: #1e7e34 !important;
+    color: #ffffff !important;
+}
+
+.btn-descarga[disabled],
+.btn-descarga.disabled {
+    opacity: 0.40 !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+}
 
 /* ─── Avatar ─────────────────────────────────────────────────────── */
 vaadin-avatar {
@@ -442,38 +295,15 @@ vaadin-avatar {
     cursor: default;
 }
 
-/* ─── ComboBox overlay ───────────────────────────────────────────── */
-vaadin-combo-box-overlay::part(overlay) {
-    border-radius: var(--lumo-border-radius-m) !important;
-    box-shadow: var(--lumo-box-shadow-m) !important;
-}
+/* ─── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f0f2f5; }
+::-webkit-scrollbar-thumb { background: #b0bec5; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #78909c; }
 
-vaadin-combo-box-item[focused]::part(content) {
-    color: #00a651 !important;
-}
-
-/* ─── Select overlay ─────────────────────────────────────────────── */
-vaadin-select-overlay::part(overlay) {
-    border-radius: var(--lumo-border-radius-m) !important;
-}
-
-/* ─── Checkbox y Radio — acento verde ───────────────────────────── */
-vaadin-checkbox::part(checkbox) {
-    border-color: #00a651 !important;
-}
-vaadin-checkbox[checked]::part(checkbox) {
-    background: #00a651 !important;
-    border-color: #00a651 !important;
-}
-
-/* ─── Títulos globales ───────────────────────────────────────────── */
-h1, h2, h3, h4 {
-    color: #1a237e;
-    font-family: var(--lumo-font-family);
-}
-
-/* Hr decorativo en drawer */
+/* ─── Separador en sidebar ───────────────────────────────────────── */
 hr {
-    border-color: rgba(255,255,255,0.15) !important;
+    border: none !important;
+    border-top: 1px solid rgba(255,255,255,0.15) !important;
     margin: 8px 0 !important;
 }

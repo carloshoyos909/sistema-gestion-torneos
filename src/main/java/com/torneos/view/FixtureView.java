@@ -5,7 +5,6 @@ import com.torneos.dto.TorneoResponse;
 import com.torneos.service.PartidoService;
 import com.torneos.service.ReporteService;
 import com.torneos.service.TorneoService;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -46,9 +45,10 @@ public class FixtureView extends VerticalLayout {
     private List<PartidoResponse> partidosActuales = new ArrayList<>();
     private final FlexLayout contenedorTarjetas = new FlexLayout();
 
-    // Anchors reutilizables — se actualiza su href al seleccionar torneo
-    private final Anchor anchorPdf   = crearAnchorDescarga();
-    private final Anchor anchorExcel = crearAnchorDescarga();
+    // Anchors estilizados como botones — NO contienen vaadin-button
+    // para que el browser procese el href sin interferencia de Vaadin
+    private final Anchor anchorPdf   = new Anchor();
+    private final Anchor anchorExcel = new Anchor();
 
     public FixtureView(PartidoService partidoService, TorneoService torneoService,
                        ReporteService reporteService) {
@@ -60,20 +60,10 @@ public class FixtureView extends VerticalLayout {
         torneo.setItems(torneoService.getTorneosActivos());
         torneo.setWidth("350px");
 
-        // Los botones visibles están DENTRO del Anchor, pero el Anchor tiene
-        // router-ignore para que Vaadin no lo intercepte como navegación interna.
-        Button btnPdf = new Button("⬇ PDF", new Icon(VaadinIcon.FILE_TEXT));
-        btnPdf.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        estiloBtnDescarga(btnPdf, "#1a237e");
-        btnPdf.setEnabled(false);
-
-        Button btnExcel = new Button("⬇ Excel", new Icon(VaadinIcon.TABLE));
-        btnExcel.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        estiloBtnDescarga(btnExcel, "#1e7e34");
-        btnExcel.setEnabled(false);
-
-        anchorPdf.add(btnPdf);
-        anchorExcel.add(btnExcel);
+        // Configurar los Anchor como botones de descarga directamente.
+        // No hay vaadin-button adentro para evitar que Vaadin intercepte el click.
+        configurarAnchorDescarga(anchorPdf,   "📄 PDF",   "btn-descarga btn-descarga-pdf disabled");
+        configurarAnchorDescarga(anchorExcel, "📊 Excel", "btn-descarga btn-descarga-excel disabled");
 
         contenedorTarjetas.setFlexWrap(FlexLayout.FlexWrap.WRAP);
         contenedorTarjetas.getStyle().set("gap", "16px").set("padding", "8px 0");
@@ -84,73 +74,64 @@ public class FixtureView extends VerticalLayout {
             if (torneoSeleccionado == null) {
                 contenedorTarjetas.removeAll();
                 partidosActuales = new ArrayList<>();
-                btnPdf.setEnabled(false);
-                btnExcel.setEnabled(false);
-                anchorPdf.setHref("");
-                anchorExcel.setHref("");
+                deshabilitarAnchors();
             } else {
                 partidosActuales = partidoService.getPartidos(torneoSeleccionado.id());
                 renderizarTarjetas();
-                boolean hayPartidos = !partidosActuales.isEmpty();
-                btnPdf.setEnabled(hayPartidos);
-                btnExcel.setEnabled(hayPartidos);
 
-                if (hayPartidos) {
-                    String nombre = torneoSeleccionado.nombre();
+                if (!partidosActuales.isEmpty()) {
+                    String nombre   = torneoSeleccionado.nombre();
                     String safeName = nombre.replaceAll("[^a-zA-Z0-9]", "_");
 
-                    // Registrar los streams en la sesión — el href queda como
-                    // una URL del servidor que el browser descarga directamente
                     anchorPdf.setHref(registrarStream(new StreamResource(
                             safeName + "_fixture.pdf",
                             () -> reporteService.generarPdfFixture(nombre, partidosActuales))));
-
                     anchorExcel.setHref(registrarStream(new StreamResource(
                             safeName + "_fixture.xlsx",
                             () -> reporteService.generarExcelFixture(nombre, partidosActuales))));
+
+                    habilitarAnchors();
+                } else {
+                    deshabilitarAnchors();
                 }
             }
         });
 
         HorizontalLayout toolbar = new HorizontalLayout(torneo, anchorPdf, anchorExcel);
-        toolbar.setAlignItems(FlexComponent.Alignment.END);
+        toolbar.setAlignItems(FlexComponent.Alignment.CENTER);
         toolbar.setSpacing(true);
 
         add(toolbar, contenedorTarjetas);
         setPadding(true);
     }
 
-    /**
-     * Crea un Anchor con router-ignore y download attribute.
-     * router-ignore = Vaadin no intercepta el click como navegación interna.
-     * download      = el browser trata la URL como descarga, no navegación.
-     */
-    private static Anchor crearAnchorDescarga() {
-        Anchor anchor = new Anchor("", "");
+    private void configurarAnchorDescarga(Anchor anchor, String texto, String clases) {
+        // router-ignore: Vaadin no intercepta como navegación interna
+        // download:      el browser descarga el recurso en lugar de navegar
         anchor.getElement().setAttribute("router-ignore", "");
         anchor.getElement().setAttribute("download", "");
-        anchor.getStyle().set("text-decoration", "none").set("display", "inline-flex");
-        return anchor;
+        anchor.setText(texto);
+        anchor.setClassName(clases);
+        anchor.setHref("");
     }
 
-    /**
-     * Registra el StreamResource en la sesión de Vaadin y devuelve la URI.
-     * Esto garantiza que el href apunte al contenido binario real.
-     */
+    private void habilitarAnchors() {
+        anchorPdf.setClassName("btn-descarga btn-descarga-pdf");
+        anchorExcel.setClassName("btn-descarga btn-descarga-excel");
+    }
+
+    private void deshabilitarAnchors() {
+        anchorPdf.setClassName("btn-descarga btn-descarga-pdf disabled");
+        anchorExcel.setClassName("btn-descarga btn-descarga-excel disabled");
+        anchorPdf.setHref("");
+        anchorExcel.setHref("");
+    }
+
     private String registrarStream(StreamResource resource) {
         StreamRegistration reg = VaadinSession.getCurrent()
                 .getResourceRegistry()
                 .registerResource(resource);
         return reg.getResourceUri().toString();
-    }
-
-    private void estiloBtnDescarga(Button btn, String bg) {
-        btn.getStyle()
-                .set("background", bg)
-                .set("color", "#ffffff")
-                .set("border-radius", "8px")
-                .set("font-weight", "600")
-                .set("cursor", "pointer");
     }
 
     private void renderizarTarjetas() {
@@ -166,7 +147,6 @@ public class FixtureView extends VerticalLayout {
             return;
         }
 
-        // Agrupar por fase preservando el orden de inserción
         Map<String, List<PartidoResponse>> porFase = new java.util.LinkedHashMap<>();
         for (PartidoResponse p : partidosActuales) {
             String fase = (p.fase() != null && !p.fase().isBlank()) ? p.fase() : "PARTIDOS";
@@ -186,8 +166,7 @@ public class FixtureView extends VerticalLayout {
                     .set("margin-top", multiFase ? "16px" : "0")
                     .set("margin-bottom", "8px")
                     .set("font-size", "1rem")
-                    .set("font-weight", "700")
-                    .set("letter-spacing", "0.03em");
+                    .set("font-weight", "700");
             contenedorTarjetas.add(tituloFase);
 
             for (PartidoResponse p : entry.getValue()) {
@@ -222,7 +201,8 @@ public class FixtureView extends VerticalLayout {
         enfrentamiento.setWidthFull();
         enfrentamiento.setSpacing(true);
 
-        Paragraph info = new Paragraph("📅 " + partido.fecha() + "  ⏰ " + partido.hora() + "  📍 " + partido.cancha());
+        Paragraph info = new Paragraph(
+                "📅 " + partido.fecha() + "  ⏰ " + partido.hora() + "  📍 " + partido.cancha());
         info.addClassName("match-info");
 
         HorizontalLayout footer = new HorizontalLayout(estadoBadge);
@@ -232,7 +212,8 @@ public class FixtureView extends VerticalLayout {
 
         if (esAdminOOrganizador() && torneoSeleccionado != null
                 && partidoService.puedeModificar(torneoSeleccionado.id())) {
-            Button btnResultado = new Button(partido.jugado() ? "✏️ Editar" : "⚽ Resultado",
+            Button btnResultado = new Button(
+                    partido.jugado() ? "✏️ Editar resultado" : "⚽ Registrar resultado",
                     e -> abrirDialogoResultado(partido));
             btnResultado.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
             footer.add(btnResultado);
@@ -264,7 +245,7 @@ public class FixtureView extends VerticalLayout {
             int gv = golesVisitante.getValue() != null ? golesVisitante.getValue() : 0;
             try {
                 partidoService.registrarResultado(partido.id(), gl, gv);
-                Notification n = Notification.show("Resultado guardado correctamente.");
+                Notification n = Notification.show("Resultado guardado.");
                 n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 if (torneoSeleccionado != null) {
                     partidosActuales = partidoService.getPartidos(torneoSeleccionado.id());
@@ -275,19 +256,18 @@ public class FixtureView extends VerticalLayout {
                 Notification n = Notification.show(ex.getMessage());
                 n.addThemeVariants(NotificationVariant.LUMO_ERROR);
             } catch (SecurityException ex) {
-                Notification n = Notification.show("No tienes permiso para modificar este partido.",
+                Notification n = Notification.show("Sin permiso para modificar este partido.",
                         3000, Notification.Position.MIDDLE);
                 n.addThemeVariants(NotificationVariant.LUMO_ERROR);
                 dialog.close();
             }
         });
         btnGuardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
         Button btnCancelar = new Button("Cancelar", e -> dialog.close());
-        HorizontalLayout camposMarcador = new HorizontalLayout(golesLocal, golesVisitante);
-        camposMarcador.setAlignItems(FlexComponent.Alignment.END);
-        HorizontalLayout acciones = new HorizontalLayout(btnGuardar, btnCancelar);
-        dialog.add(new VerticalLayout(camposMarcador, acciones));
+
+        HorizontalLayout campos = new HorizontalLayout(golesLocal, golesVisitante);
+        campos.setAlignItems(FlexComponent.Alignment.END);
+        dialog.add(new VerticalLayout(campos, new HorizontalLayout(btnGuardar, btnCancelar)));
         dialog.open();
     }
 

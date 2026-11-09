@@ -1,0 +1,58 @@
+/* Sobreescribe las variables Lumo DENTRO del Shadow DOM del vaadin-button */
+:host {
+    --lumo-primary-color:          #00a651;
+    --lumo-primary-text-color:     #00a651;
+    --lumo-primary-color-50pct:    rgba(0, 166, 81, 0.5);
+    --lumo-primary-color-10pct:    rgba(0, 166, 81, 0.1);
+    --lumo-primary-contrast-color: #ffffff;
+}
+
+/* PRIMARY → verde */
+:host([theme~="primary"]) [part="button"] {
+    background-color: #00a651;
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 10px;
+}
+:host([theme~="primary"]:hover) [part="button"] {
+    background-color: #008f47;
+}
+
+/* SUCCESS → verde oscuro */
+:host([theme~="success"]) [part="button"] {
+    background-color: #1e7e34;
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 10px;
+}
+:host([theme~="success"]:hover) [part="button"] {
+    background-color: #19692c;
+}
+
+/* CONTRAST → azul marino */
+:host([theme~="contrast"]) [part="button"] {
+    background-color: #1a237e;
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 10px;
+}
+:host([theme~="contrast"]:hover) [part="button"] {
+    background-color: #151c6a;
+}
+
+/* ERROR mantiene el rojo de Lumo pero con border-radius */
+:host([theme~="error"]) [part="button"] {
+    border-radius: 10px;
+}
+
+/* TERTIARY → sin fondo, texto verde */
+:host([theme~="tertiary"]) [part="button"] {
+    color: #00a651;
+    border-radius: 10px;
+}
+
+/* DESHABILITADO */
+:host([disabled]) [part="button"] {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

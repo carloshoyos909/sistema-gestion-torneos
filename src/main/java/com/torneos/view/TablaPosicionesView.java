@@ -5,16 +5,12 @@ import com.torneos.dto.TorneoResponse;
 import com.torneos.service.ReporteService;
 import com.torneos.service.TablaPosicionesService;
 import com.torneos.service.TorneoService;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -39,8 +35,8 @@ public class TablaPosicionesView extends VerticalLayout {
     private TorneoResponse torneoSeleccionado;
     private List<TablaPosicionesDTO> datosActuales = new ArrayList<>();
 
-    private final Anchor anchorPdf   = crearAnchorDescarga();
-    private final Anchor anchorExcel = crearAnchorDescarga();
+    private final Anchor anchorPdf   = new Anchor();
+    private final Anchor anchorExcel = new Anchor();
 
     public TablaPosicionesView(TablaPosicionesService tablaPosicionesService,
                                 TorneoService torneoService,
@@ -55,18 +51,8 @@ public class TablaPosicionesView extends VerticalLayout {
         torneo.setItems(torneoService.getTorneosActivos());
         torneo.setWidth("300px");
 
-        Button btnPdf = new Button("⬇ PDF", new Icon(VaadinIcon.FILE_TEXT));
-        btnPdf.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        estiloBtnDescarga(btnPdf, "#1a237e");
-        btnPdf.setEnabled(false);
-
-        Button btnExcel = new Button("⬇ Excel", new Icon(VaadinIcon.TABLE));
-        btnExcel.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        estiloBtnDescarga(btnExcel, "#1e7e34");
-        btnExcel.setEnabled(false);
-
-        anchorPdf.add(btnPdf);
-        anchorExcel.add(btnExcel);
+        configurarAnchorDescarga(anchorPdf,   "📄 PDF",   "btn-descarga btn-descarga-pdf disabled");
+        configurarAnchorDescarga(anchorExcel, "📊 Excel", "btn-descarga btn-descarga-excel disabled");
 
         configurarGrid();
 
@@ -75,34 +61,31 @@ public class TablaPosicionesView extends VerticalLayout {
             if (torneoSeleccionado == null) {
                 grid.setItems();
                 datosActuales = new ArrayList<>();
-                btnPdf.setEnabled(false);
-                btnExcel.setEnabled(false);
-                anchorPdf.setHref("");
-                anchorExcel.setHref("");
+                deshabilitarAnchors();
             } else {
                 datosActuales = tablaPosicionesService.obtenerTablaOrdenada(torneoSeleccionado.id());
                 grid.setItems(datosActuales);
-                boolean hayDatos = !datosActuales.isEmpty();
-                btnPdf.setEnabled(hayDatos);
-                btnExcel.setEnabled(hayDatos);
 
-                if (hayDatos) {
-                    String nombre = torneoSeleccionado.nombre();
+                if (!datosActuales.isEmpty()) {
+                    String nombre   = torneoSeleccionado.nombre();
                     String safeName = nombre.replaceAll("[^a-zA-Z0-9]", "_");
 
                     anchorPdf.setHref(registrarStream(new StreamResource(
                             safeName + "_posiciones.pdf",
                             () -> reporteService.generarPdfTablaPosiciones(nombre, datosActuales))));
-
                     anchorExcel.setHref(registrarStream(new StreamResource(
                             safeName + "_posiciones.xlsx",
                             () -> reporteService.generarExcelTablaPosiciones(nombre, datosActuales))));
+
+                    habilitarAnchors();
+                } else {
+                    deshabilitarAnchors();
                 }
             }
         });
 
         HorizontalLayout toolbar = new HorizontalLayout(torneo, anchorPdf, anchorExcel);
-        toolbar.setAlignItems(FlexComponent.Alignment.END);
+        toolbar.setAlignItems(FlexComponent.Alignment.CENTER);
         toolbar.setSpacing(true);
 
         add(titulo, toolbar, grid);
@@ -110,12 +93,24 @@ public class TablaPosicionesView extends VerticalLayout {
         setSpacing(true);
     }
 
-    private static Anchor crearAnchorDescarga() {
-        Anchor anchor = new Anchor("", "");
+    private void configurarAnchorDescarga(Anchor anchor, String texto, String clases) {
         anchor.getElement().setAttribute("router-ignore", "");
         anchor.getElement().setAttribute("download", "");
-        anchor.getStyle().set("text-decoration", "none").set("display", "inline-flex");
-        return anchor;
+        anchor.setText(texto);
+        anchor.setClassName(clases);
+        anchor.setHref("");
+    }
+
+    private void habilitarAnchors() {
+        anchorPdf.setClassName("btn-descarga btn-descarga-pdf");
+        anchorExcel.setClassName("btn-descarga btn-descarga-excel");
+    }
+
+    private void deshabilitarAnchors() {
+        anchorPdf.setClassName("btn-descarga btn-descarga-pdf disabled");
+        anchorExcel.setClassName("btn-descarga btn-descarga-excel disabled");
+        anchorPdf.setHref("");
+        anchorExcel.setHref("");
     }
 
     private String registrarStream(StreamResource resource) {
@@ -125,15 +120,6 @@ public class TablaPosicionesView extends VerticalLayout {
         return reg.getResourceUri().toString();
     }
 
-    private void estiloBtnDescarga(Button btn, String bg) {
-        btn.getStyle()
-                .set("background", bg)
-                .set("color", "#ffffff")
-                .set("border-radius", "8px")
-                .set("font-weight", "600")
-                .set("cursor", "pointer");
-    }
-
     private void configurarGrid() {
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
@@ -141,10 +127,9 @@ public class TablaPosicionesView extends VerticalLayout {
             HorizontalLayout celda = new HorizontalLayout();
             celda.setAlignItems(FlexComponent.Alignment.CENTER);
             celda.setSpacing(true);
-
             if (t.getPosicion() == 1) {
                 Span trofeo = new Span("🏆");
-                Span badge = new Span("1");
+                Span badge  = new Span("1");
                 badge.getElement().getThemeList().add("badge success");
                 badge.getStyle().set("font-weight", "700");
                 celda.add(trofeo, badge);

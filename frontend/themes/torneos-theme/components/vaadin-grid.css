@@ -1,0 +1,15 @@
+:host {
+    --lumo-primary-color:       #00a651;
+    --lumo-primary-text-color:  #00a651;
+    --lumo-primary-color-10pct: rgba(0, 166, 81, 0.1);
+}
+
+[part~="header-cell"] {
+    background-color: #00a651 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+[part~="row"]:hover > [part~="cell"] {
+    background-color: rgba(0, 166, 81, 0.06) !important;
+}

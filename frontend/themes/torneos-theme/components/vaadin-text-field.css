@@ -1,0 +1,5 @@
+:host {
+    --lumo-primary-color:       #00a651;
+    --lumo-primary-text-color:  #00a651;
+    --lumo-primary-color-10pct: rgba(0, 166, 81, 0.1);
+}
