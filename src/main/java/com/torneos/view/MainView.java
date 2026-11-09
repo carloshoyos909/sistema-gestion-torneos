@@ -34,7 +34,7 @@ public class MainView extends AppLayout implements RouterLayout {
         DrawerToggle toggle = new DrawerToggle();
         toggle.getStyle().set("color", "#ffffff");
 
-        H1 titulo = new H1("Gestión de Torneos");
+        H1 titulo = new H1("TorneON");
         titulo.getStyle()
                 .set("font-size", "var(--lumo-font-size-l)")
                 .set("margin", "0")

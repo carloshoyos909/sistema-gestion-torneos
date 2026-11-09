@@ -25,7 +25,7 @@ public class HomeView extends VerticalLayout {
         boolean esAdmin       = tieneRol("ROLE_ADMIN");
         boolean esOrganizador = tieneRol("ROLE_ORGANIZADOR");
 
-        H2 bienvenida = new H2("Bienvenido al Sistema de Gestión de Torneos");
+        H2 bienvenida = new H2("Bienvenido al Sistema de Gestión de Torneos TorneON");
         bienvenida.getStyle().set("margin-bottom", "4px");
 
         Paragraph descripcion = new Paragraph(

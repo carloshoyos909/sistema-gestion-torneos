@@ -37,7 +37,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 .set("max-width", "360px")
                 .set("text-align", "center");
 
-        add(new H1("🏆 Sistema de Torneos"), login, linkRegistro, hint);
+        add(new H1("TorneON"), login, linkRegistro, hint);
     }
 
     @Override
