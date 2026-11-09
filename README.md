@@ -43,18 +43,6 @@ La aplicación permite sobrescribir las variables:
 - `DB_PASSWORD`
 - `SERVER_PORT`
 
-El archivo `.env` no debe subirse al repositorio.
-
-## Funcionalidades del Sprint 2
-
-- Persistencia de torneos.
-- Registro persistente de equipos.
-- Asociación persistente de jugadores a equipos.
-- Persistencia del fixture.
-- Consulta de equipos y jugadores.
-- Consulta de partidos.
-- API REST para registro y consulta.
-
 ## API
 
 La documentación de endpoints se encuentra en [`docs/API.md`](docs/API.md).
