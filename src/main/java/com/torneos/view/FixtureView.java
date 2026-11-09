@@ -128,7 +128,7 @@ public class FixtureView extends VerticalLayout {
             if (multiFase) {
                 H3 tituloFase = new H3(entry.getKey());
                 tituloFase.getStyle()
-                        .set("color", "#1a237e")
+                        .set("color", "#00a651")
                         .set("border-bottom", "2px solid var(--lumo-primary-color)")
                         .set("padding-bottom", "4px")
                         .set("width", "100%")

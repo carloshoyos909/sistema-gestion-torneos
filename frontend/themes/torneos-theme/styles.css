@@ -92,7 +92,7 @@ vaadin-side-nav-item[active]::part(item) {
 
 /* ─── 6. Login ───────────────────────────────────────────── */
 .login-view {
-    background: linear-gradient(135deg, #1a237e 0%, #00a651 100%) !important;
+    background: linear-gradient(135deg, #5ddd65 0%, #00a651 100%) !important;
     min-height: 100vh;
 }
 
@@ -145,7 +145,7 @@ vaadin-side-nav-item[active]::part(item) {
 
 .tarjeta-home h3 {
     margin: 8px 0 4px 0 !important;
-    color: #1a237e !important;
+    color: #00a651 !important;
     font-weight: 600 !important;
 }
 
@@ -234,7 +234,7 @@ vaadin-dialog-overlay::part(overlay) {
 }
 
 vaadin-dialog-overlay::part(header) {
-    background: #1a237e !important;
+    background: #00a651 !important;
     color: #ffffff !important;
     border-radius: var(--lumo-border-radius-l) var(--lumo-border-radius-l) 0 0 !important;
     padding: 16px 20px !important;
@@ -261,7 +261,7 @@ vaadin-dialog-overlay::part(header) {
 
 [theme~="badge"][theme~="contrast"] {
     background: #e8eaf6 !important;
-    color: #1a237e !important;
+    color: #00a651 !important;
 }
 
 /* ─── 13. Notificaciones ─────────────────────────────────── */
@@ -308,7 +308,7 @@ vaadin-notification-container {
 .match-team {
     font-weight: 600 !important;
     font-size: 0.95rem !important;
-    color: #1a237e !important;
+    color: #00a651 !important;
     text-align: center;
     flex: 1;
 }

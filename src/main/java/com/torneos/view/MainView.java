@@ -128,11 +128,7 @@ public class MainView extends AppLayout implements RouterLayout {
         }
         drawerContent.add(navSistema);
 
-        // ── Logout al fondo ───────────────────────────────────────────────────
-        VerticalLayout spacer = new VerticalLayout();
-        spacer.setFlexGrow(1, spacer);
-        drawerContent.add(spacer);
-
+        // ── Botón de Cerrar sesión pegado inmediatamente abajo ────────────────
         Hr separador = new Hr();
         separador.getStyle().set("margin", "8px 0");
 
