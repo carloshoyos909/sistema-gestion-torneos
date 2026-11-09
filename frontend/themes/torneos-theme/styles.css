@@ -1,28 +1,28 @@
-/* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════
    TEMA: Sistema de Gestión de Torneos
-   Paleta: Verde deportivo #00a651 + Azul marino #1a237e + Blanco
-   ═══════════════════════════════════════════════════════════ */
+   Paleta: Verde #00a651  ·  Azul marino #1a237e  ·  Blanco #ffffff
+   ═══════════════════════════════════════════════════════════════════ */
 
-/* ─── 1. Tipografía: Inter desde Google Fonts ─────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* ─── Variables globales ─────────────────────────────────────────── */
 :root {
+    /* Tipografía */
     --lumo-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
 
-/* ─── 2. Color primario: verde deportivo ─────────────────── */
-:root {
+    /* ⚠️  Color primario → VERDE. Esto reemplaza el azul Lumo en TODO el tema */
     --lumo-primary-color:           #00a651;
     --lumo-primary-color-50pct:     rgba(0, 166, 81, 0.5);
     --lumo-primary-color-10pct:     rgba(0, 166, 81, 0.1);
     --lumo-primary-text-color:      #00a651;
     --lumo-primary-contrast-color:  #ffffff;
 
-    /* Colores de base y contraste */
+    /* Textos */
     --lumo-base-color:              #f8f9fa;
     --lumo-body-text-color:         #1a1a2e;
-    --lumo-secondary-text-color:    #6c757d;
+    --lumo-secondary-text-color:    #5f6368;
     --lumo-disabled-text-color:     #adb5bd;
+    --lumo-header-text-color:       #1a237e;
 
     /* Bordes */
     --lumo-contrast-5pct:           rgba(0, 0, 0, 0.05);
@@ -30,7 +30,7 @@
     --lumo-contrast-20pct:          rgba(0, 0, 0, 0.15);
     --lumo-contrast-30pct:          rgba(0, 0, 0, 0.22);
 
-    /* Border radius */
+    /* Bordes redondeados */
     --lumo-border-radius-s:         6px;
     --lumo-border-radius-m:         10px;
     --lumo-border-radius-l:         16px;
@@ -39,226 +39,149 @@
     --lumo-box-shadow-s:  0 2px 8px rgba(0,0,0,0.08);
     --lumo-box-shadow-m:  0 4px 16px rgba(0,0,0,0.12);
     --lumo-box-shadow-l:  0 8px 32px rgba(0,0,0,0.16);
-
-    /* Sidebar/navbar bg para referencia */
-    --app-navbar-bg:      #00a651;
-    --app-drawer-bg:      #1a237e;
 }
 
-/* ─── 3. Fondo general de la app ─────────────────────────── */
+/* ─── Fondo general ──────────────────────────────────────────────── */
 html, body {
+    background-color: #f0f2f5 !important;
+    font-family: var(--lumo-font-family);
+}
+
+/* ─── App Layout ─────────────────────────────────────────────────── */
+vaadin-app-layout {
     background-color: #f0f2f5 !important;
 }
 
-/* ─── 4. Navbar (encabezado) ─────────────────────────────── */
-[part="navbar"] {
+/* ─── Navbar ─────────────────────────────────────────────────────── */
+vaadin-app-layout::part(navbar) {
     background-color: #00a651 !important;
-    color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.20) !important;
 }
 
-[part="navbar"] h1,
-[part="navbar"] span,
-[part="navbar"] * {
+/* Forzar todos los textos del navbar a blanco */
+vaadin-app-layout::part(navbar) * {
     color: #ffffff !important;
 }
 
+/* DrawerToggle (el ícono hamburguesa) */
 vaadin-drawer-toggle {
     color: #ffffff !important;
 }
-
 vaadin-drawer-toggle::part(button) {
     color: #ffffff !important;
 }
 
-/* ─── 5. Sidebar (drawer) ────────────────────────────────── */
-[part="drawer"] {
-    background: #1a237e !important;
+/* ─── Sidebar (drawer) ───────────────────────────────────────────── */
+vaadin-app-layout::part(drawer) {
+    background-color: #1a237e !important;
     border-right: none !important;
 }
 
 vaadin-side-nav {
-    padding: 12px 8px !important;
+    padding: 4px 8px !important;
 }
 
 vaadin-side-nav-item::part(item) {
-    color: rgba(255,255,255,0.85) !important;
+    color: rgba(255,255,255,0.82) !important;
     border-radius: var(--lumo-border-radius-m) !important;
-    margin: 2px 0 !important;
-    font-weight: 500;
-    transition: background 0.2s, color 0.2s, transform 0.15s ease-in-out !important;
+    margin: 1px 0 !important;
+    font-weight: 500 !important;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
+    padding: 8px 12px !important;
 }
 
 vaadin-side-nav-item::part(item):hover {
-    background: rgba(255,255,255,0.15) !important;
+    background: rgba(255,255,255,0.12) !important;
     color: #ffffff !important;
-    transform: translateX(4px);
+    transform: translateX(3px) !important;
 }
 
+/* ⚠️  Item activo → verde, NO azul */
 vaadin-side-nav-item[active]::part(item) {
     background: #00a651 !important;
     color: #ffffff !important;
     font-weight: 600 !important;
-    box-shadow: 0 2px 8px rgba(0,166,81,0.4) !important;
+    box-shadow: 0 2px 8px rgba(0,166,81,0.35) !important;
 }
 
-/* ─── 6. Login ───────────────────────────────────────────── */
-.login-view {
-    background: linear-gradient(135deg, #1a237e 0%, #00a651 100%) !important;
-    min-height: 100vh;
-}
+/* ─── Botones ────────────────────────────────────────────────────── */
 
-.login-view h1 {
+/* PRIMARY → verde #00a651 */
+vaadin-button[theme~="primary"]::part(label),
+vaadin-button[theme~="primary"]::part(prefix),
+vaadin-button[theme~="primary"]::part(suffix) {
     color: #ffffff !important;
-    font-size: 2rem !important;
-    font-weight: 700 !important;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    margin-bottom: 8px !important;
 }
-
-.login-view vaadin-login-form {
-    border-radius: var(--lumo-border-radius-l) !important;
-    box-shadow: var(--lumo-box-shadow-l) !important;
-    background: #ffffff !important;
-    padding: 8px !important;
-}
-
-.login-view a {
-    color: rgba(255,255,255,0.9) !important;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.2);
-}
-
-.login-view p {
-    color: rgba(255,255,255,0.85) !important;
-    font-size: 0.85rem !important;
-    max-width: 340px;
-    text-align: center;
-}
-
-/* ─── 7. Tarjetas del Home ───────────────────────────────── */
-.tarjeta-home {
-    border: 1.5px solid var(--lumo-contrast-10pct) !important;
-    border-radius: var(--lumo-border-radius-l) !important;
-    background: #ffffff !important;
-    box-shadow: var(--lumo-box-shadow-s) !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
-    cursor: pointer;
-    min-width: 240px;
-    max-width: 340px;
-    flex: 1 1 240px;
-    padding: var(--lumo-space-m) !important;
-}
-
-.tarjeta-home:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: var(--lumo-box-shadow-m) !important;
-    border-color: var(--lumo-primary-color) !important;
-}
-
-.tarjeta-home h3 {
-    margin: 8px 0 4px 0 !important;
-    color: #1a237e !important;
-    font-weight: 600 !important;
-}
-
-.tarjeta-home p {
-    color: var(--lumo-secondary-text-color) !important;
-    margin: 0 0 8px 0 !important;
-    font-size: 0.85rem !important;
-}
-
-.tarjeta-home a {
-    color: var(--lumo-primary-color) !important;
-    font-weight: 600 !important;
-    text-decoration: none !important;
-}
-
-/* ─── 8. Grids ───────────────────────────────────────────── */
-vaadin-grid {
+vaadin-button[theme~="primary"]::part(button) {
+    background-color: #00a651 !important;
+    color: #ffffff !important;
     border-radius: var(--lumo-border-radius-m) !important;
-    box-shadow: var(--lumo-box-shadow-s) !important;
-    background: #ffffff !important;
+    font-weight: 600 !important;
     border: none !important;
 }
-
-vaadin-grid::part(header-cell) {
-    background: var(--lumo-primary-color) !important;
-    color: #ffffff !important;
-    font-weight: 600 !important;
-    font-size: 0.85rem !important;
-    letter-spacing: 0.03em !important;
+vaadin-button[theme~="primary"]::part(button):hover {
+    background-color: #00884a !important;
 }
 
-vaadin-grid::part(row):hover {
-    background: var(--lumo-primary-color-10pct) !important;
-}
-
-vaadin-grid::part(row):nth-child(even) {
-    background: #f8f9fa;
-}
-
-/* ─── 9. Botones ─────────────────────────────────────────── */
-
-/* Primary → verde */
-vaadin-button[theme~="primary"] {
-    background: var(--lumo-primary-color) !important;
+/* SUCCESS → verde oscuro */
+vaadin-button[theme~="success"]::part(button) {
+    background-color: #1e7e34 !important;
     color: #ffffff !important;
     border-radius: var(--lumo-border-radius-m) !important;
     font-weight: 600 !important;
-    transition: filter 0.2s !important;
+    border: none !important;
+}
+vaadin-button[theme~="success"]::part(label),
+vaadin-button[theme~="success"]::part(prefix) {
+    color: #ffffff !important;
 }
 
-vaadin-button[theme~="primary"]:hover {
-    filter: brightness(1.08) !important;
-}
-
-/* Success → verde más oscuro */
-vaadin-button[theme~="success"] {
-    background: #1e7e34 !important;
+/* CONTRAST → azul marino */
+vaadin-button[theme~="contrast"]::part(button) {
+    background-color: #1a237e !important;
     color: #ffffff !important;
     border-radius: var(--lumo-border-radius-m) !important;
     font-weight: 600 !important;
-    transition: filter 0.2s !important;
+    border: none !important;
 }
-
-vaadin-button[theme~="success"]:hover {
-    filter: brightness(1.08) !important;
-}
-
-/* Contrast → azul marino */
-vaadin-button[theme~="contrast"] {
-    background: #1a237e !important;
+vaadin-button[theme~="contrast"]::part(label),
+vaadin-button[theme~="contrast"]::part(prefix) {
     color: #ffffff !important;
-    border-radius: var(--lumo-border-radius-m) !important;
-    font-weight: 600 !important;
-    transition: filter 0.2s !important;
 }
 
-vaadin-button[theme~="contrast"]:hover {
-    filter: brightness(1.15) !important;
-}
-
-/* Error button */
-vaadin-button[theme~="error"] {
+/* ERROR → rojo */
+vaadin-button[theme~="error"]::part(button) {
     border-radius: var(--lumo-border-radius-m) !important;
 }
 
-/* Botón deshabilitado — visible pero claramente inactivo */
-vaadin-button[disabled] {
-    opacity: 0.45 !important;
+/* TERTIARY → sin fondo, texto verde */
+vaadin-button[theme~="tertiary"]::part(button) {
+    border-radius: var(--lumo-border-radius-m) !important;
+    color: var(--lumo-primary-color) !important;
+}
+
+/* SMALL */
+vaadin-button[theme~="small"]::part(button) {
+    border-radius: var(--lumo-border-radius-s) !important;
+}
+
+/* Deshabilitado */
+vaadin-button[disabled]::part(button) {
+    opacity: 0.40 !important;
     cursor: not-allowed !important;
 }
 
-/* ─── 10. Campos de texto ────────────────────────────────── */
+/* ─── Campos de formulario ───────────────────────────────────────── */
 vaadin-text-field::part(input-field),
 vaadin-password-field::part(input-field),
 vaadin-combo-box::part(input-field),
 vaadin-date-picker::part(input-field),
 vaadin-time-picker::part(input-field),
 vaadin-text-area::part(input-field),
-vaadin-integer-field::part(input-field) {
+vaadin-integer-field::part(input-field),
+vaadin-number-field::part(input-field) {
     border-radius: var(--lumo-border-radius-m) !important;
-    border: 1.5px solid var(--lumo-contrast-20pct) !important;
+    border: 1.5px solid rgba(0,0,0,0.15) !important;
     background: #ffffff !important;
     transition: border-color 0.2s !important;
 }
@@ -269,24 +192,65 @@ vaadin-combo-box[focused]::part(input-field),
 vaadin-date-picker[focused]::part(input-field),
 vaadin-time-picker[focused]::part(input-field),
 vaadin-text-area[focused]::part(input-field),
-vaadin-integer-field[focused]::part(input-field) {
-    border-color: var(--lumo-primary-color) !important;
-    box-shadow: 0 0 0 3px var(--lumo-primary-color-10pct) !important;
+vaadin-integer-field[focused]::part(input-field),
+vaadin-number-field[focused]::part(input-field) {
+    border-color: #00a651 !important;
+    box-shadow: 0 0 0 3px rgba(0,166,81,0.12) !important;
 }
 
-/* Labels de campo */
+/* Labels */
 vaadin-text-field::part(label),
 vaadin-password-field::part(label),
 vaadin-combo-box::part(label),
 vaadin-date-picker::part(label),
 vaadin-time-picker::part(label),
 vaadin-text-area::part(label),
-vaadin-integer-field::part(label) {
+vaadin-integer-field::part(label),
+vaadin-number-field::part(label) {
     font-weight: 600 !important;
     color: #1a1a2e !important;
 }
 
-/* ─── 11. Diálogos ───────────────────────────────────────── */
+/* ComboBox caret/toggle button — quitar azul Lumo */
+vaadin-combo-box::part(toggle-button) {
+    color: #5f6368 !important;
+}
+
+/* TimePicker y DatePicker toggle buttons */
+vaadin-time-picker::part(toggle-button),
+vaadin-date-picker::part(toggle-button) {
+    color: #00a651 !important;
+}
+
+/* ─── Grids ──────────────────────────────────────────────────────── */
+vaadin-grid {
+    border-radius: var(--lumo-border-radius-m) !important;
+    box-shadow: var(--lumo-box-shadow-s) !important;
+    background: #ffffff !important;
+    border: none !important;
+}
+
+vaadin-grid::part(header-cell) {
+    background: #00a651 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    letter-spacing: 0.03em !important;
+}
+
+vaadin-grid::part(row):hover {
+    background: rgba(0,166,81,0.06) !important;
+}
+
+/* Sorter icon en cabecera */
+vaadin-grid-sorter {
+    color: rgba(255,255,255,0.85) !important;
+}
+vaadin-grid-sorter[direction] {
+    color: #ffffff !important;
+}
+
+/* ─── Diálogos ───────────────────────────────────────────────────── */
 vaadin-dialog-overlay::part(overlay) {
     border-radius: var(--lumo-border-radius-l) !important;
     box-shadow: var(--lumo-box-shadow-l) !important;
@@ -294,25 +258,33 @@ vaadin-dialog-overlay::part(overlay) {
 
 vaadin-dialog-overlay::part(header) {
     background: #1a237e !important;
-    color: #ffffff !important;
     border-radius: var(--lumo-border-radius-l) var(--lumo-border-radius-l) 0 0 !important;
     padding: 16px 20px !important;
-    font-weight: 600 !important;
 }
 
 vaadin-dialog-overlay::part(title) {
     color: #ffffff !important;
+    font-weight: 700 !important;
 }
 
-/* ─── 12. Badges ─────────────────────────────────────────── */
+/* Botón de cierre del diálogo */
+vaadin-dialog-overlay::part(header-content) vaadin-button::part(button) {
+    color: rgba(255,255,255,0.8) !important;
+    background: transparent !important;
+}
+
+/* ─── Badges ─────────────────────────────────────────────────────── */
 [theme~="badge"] {
+    display: inline-flex !important;
+    align-items: center !important;
     border-radius: 20px !important;
     font-weight: 600 !important;
-    font-size: 0.8rem !important;
+    font-size: 0.78rem !important;
     padding: 2px 10px !important;
-    /* Badge neutro: gris azulado con buen contraste */
-    background: #e8eaf6 !important;
-    color: #1a237e !important;
+    /* Neutro: gris oscuro sobre fondo claro — buen contraste */
+    background: #e9ecef !important;
+    color: #343a40 !important;
+    border: none !important;
 }
 
 [theme~="badge"][theme~="success"] {
@@ -331,40 +303,71 @@ vaadin-dialog-overlay::part(title) {
 }
 
 [theme~="badge"][theme~="primary"] {
-    background: var(--lumo-primary-color-10pct) !important;
+    background: rgba(0,166,81,0.12) !important;
     color: #00703a !important;
 }
 
-/* ─── 13. Notificaciones ─────────────────────────────────── */
-vaadin-notification-container {
-    border-radius: var(--lumo-border-radius-m) !important;
+/* Badge de rol en el navbar — sobreescribir colores heredados */
+.perfil-usuario [theme~="badge"] {
+    font-size: 0.68rem !important;
+    padding: 1px 8px !important;
 }
 
-/* ─── 14. Scrollbar personalizado ────────────────────────── */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+/* ─── Login ──────────────────────────────────────────────────────── */
+.login-view {
+    background: linear-gradient(135deg, #1a237e 0%, #00a651 100%) !important;
+    min-height: 100vh;
 }
 
-::-webkit-scrollbar-track {
-    background: #f0f2f5;
+.login-view h1 {
+    color: #ffffff !important;
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-::-webkit-scrollbar-thumb {
-    background: #b0bec5;
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #78909c;
-}
-
-/* ─── 15. Match Cards (Fixture) ──────────────────────────── */
-.match-card {
-    background: #ffffff;
+.login-view vaadin-login-form {
     border-radius: var(--lumo-border-radius-l) !important;
-    box-shadow: var(--lumo-box-shadow-s);
-    border: 1px solid var(--lumo-contrast-10pct);
+    box-shadow: var(--lumo-box-shadow-l) !important;
+    background: #ffffff !important;
+}
+
+.login-view a {
+    color: rgba(255,255,255,0.92) !important;
+}
+
+.login-view p {
+    color: rgba(255,255,255,0.85) !important;
+    font-size: 0.85rem !important;
+    max-width: 360px;
+    text-align: center;
+}
+
+/* ─── Tarjetas del Home ──────────────────────────────────────────── */
+.tarjeta-home {
+    border: 1.5px solid rgba(0,0,0,0.08) !important;
+    border-radius: var(--lumo-border-radius-l) !important;
+    background: #ffffff !important;
+    box-shadow: var(--lumo-box-shadow-s) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+    cursor: pointer !important;
+    min-width: 220px;
+    max-width: 320px;
+    flex: 1 1 220px;
+}
+
+.tarjeta-home:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: var(--lumo-box-shadow-m) !important;
+    border-color: #00a651 !important;
+}
+
+/* ─── Match Cards (Fixture) ──────────────────────────────────────── */
+.match-card {
+    background: #ffffff !important;
+    border-radius: var(--lumo-border-radius-l) !important;
+    box-shadow: var(--lumo-box-shadow-s) !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
     min-width: 280px;
     max-width: 340px;
     flex: 1;
@@ -385,38 +388,33 @@ vaadin-notification-container {
 }
 
 .match-score {
-    font-size: 1.4rem !important;
+    font-size: 1.3rem !important;
     font-weight: 700 !important;
-    color: var(--lumo-primary-color) !important;
-    padding: 0 12px;
-    background: var(--lumo-primary-color-10pct);
-    border-radius: var(--lumo-border-radius-m);
+    color: #00a651 !important;
+    padding: 2px 12px !important;
+    background: rgba(0,166,81,0.10) !important;
+    border-radius: var(--lumo-border-radius-m) !important;
     min-width: 60px;
     text-align: center;
 }
 
 .match-info {
     font-size: 0.78rem !important;
-    color: var(--lumo-secondary-text-color) !important;
+    color: #5f6368 !important;
     margin: 4px 0 !important;
     text-align: center;
 }
 
-/* ─── 16. Fila del líder en tabla de posiciones ───────────── */
+/* ─── Tabla de posiciones: fila líder ────────────────────────────── */
 .fila-lider {
-    background: linear-gradient(90deg, rgba(0,166,81,0.08) 0%, rgba(255,200,0,0.06) 100%) !important;
+    background: linear-gradient(
+        90deg,
+        rgba(0,166,81,0.07) 0%,
+        rgba(255,200,0,0.05) 100%
+    ) !important;
 }
 
-/* ─── 17. Avatar en navbar ────────────────────────────────── */
-vaadin-avatar {
-    cursor: default;
-}
-
-[part="navbar"] vaadin-avatar {
-    --vaadin-avatar-size: 32px;
-}
-
-/* ─── 18. KPI Cards ───────────────────────────────────────── */
+/* ─── KPI Cards ──────────────────────────────────────────────────── */
 .kpi-card {
     border-radius: var(--lumo-border-radius-l) !important;
     box-shadow: var(--lumo-box-shadow-s) !important;
@@ -426,57 +424,56 @@ vaadin-avatar {
     text-align: center;
 }
 
-/* ─── 19. Header bar de filtros ──────────────────────────── */
-.filtros-bar {
-    background: var(--lumo-contrast-5pct) !important;
+/* ─── Notificaciones ─────────────────────────────────────────────── */
+vaadin-notification-card::part(overlay) {
     border-radius: var(--lumo-border-radius-m) !important;
-    padding: 12px 16px !important;
+    font-weight: 500 !important;
 }
 
-/* ─── 20. Sidebar logout button ──────────────────────────── */
-.sidebar-logout vaadin-button {
-    color: rgba(255,255,255,0.75) !important;
+/* ─── Scrollbar personalizado ────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f0f2f5; }
+::-webkit-scrollbar-thumb { background: #b0bec5; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #78909c; }
+
+/* ─── Avatar ─────────────────────────────────────────────────────── */
+vaadin-avatar {
+    --vaadin-avatar-size: 32px;
+    cursor: default;
 }
 
-.sidebar-logout vaadin-button:hover {
-    color: #ffffff !important;
-    background: rgba(220,50,50,0.2) !important;
-}
-
-/* ─── 21. vaadin-app-layout — asegurar fondo correcto ────── */
-vaadin-app-layout::part(navbar) {
-    background: #00a651 !important;
-}
-
-vaadin-app-layout::part(drawer) {
-    background: #1a237e !important;
-}
-
-/* ─── 22. ComboBox dropdown popup ────────────────────────── */
+/* ─── ComboBox overlay ───────────────────────────────────────────── */
 vaadin-combo-box-overlay::part(overlay) {
     border-radius: var(--lumo-border-radius-m) !important;
     box-shadow: var(--lumo-box-shadow-m) !important;
 }
 
-/* ─── 23. Títulos H2 de secciones ────────────────────────── */
-h2 {
-    color: #1a237e;
-    font-weight: 700;
+vaadin-combo-box-item[focused]::part(content) {
+    color: #00a651 !important;
 }
 
-h3 {
-    color: #1a237e;
-    font-weight: 600;
+/* ─── Select overlay ─────────────────────────────────────────────── */
+vaadin-select-overlay::part(overlay) {
+    border-radius: var(--lumo-border-radius-m) !important;
 }
 
-/* ─── 24. Fila de acciones dentro de tarjeta fixture ─────── */
-.fase-titulo {
+/* ─── Checkbox y Radio — acento verde ───────────────────────────── */
+vaadin-checkbox::part(checkbox) {
+    border-color: #00a651 !important;
+}
+vaadin-checkbox[checked]::part(checkbox) {
+    background: #00a651 !important;
+    border-color: #00a651 !important;
+}
+
+/* ─── Títulos globales ───────────────────────────────────────────── */
+h1, h2, h3, h4 {
     color: #1a237e;
-    border-bottom: 2px solid #00a651;
-    padding-bottom: 4px;
-    font-weight: 700;
-    font-size: 1rem;
-    width: 100%;
-    margin-top: 16px;
-    margin-bottom: 8px;
+    font-family: var(--lumo-font-family);
+}
+
+/* Hr decorativo en drawer */
+hr {
+    border-color: rgba(255,255,255,0.15) !important;
+    margin: 8px 0 !important;
 }

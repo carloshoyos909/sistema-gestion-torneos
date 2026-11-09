@@ -6,12 +6,12 @@ import com.torneos.model.Jugador;
 import com.torneos.service.EstadisticaService;
 import com.torneos.service.ReporteService;
 import com.torneos.service.TorneoService;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
@@ -46,6 +46,9 @@ public class JugadorView extends VerticalLayout {
     private TorneoResponse torneoSeleccionado;
     private List<EstadisticaResponse> datosActuales = new ArrayList<>();
 
+    private final Anchor anchorPdf   = crearAnchorDescarga();
+    private final Anchor anchorExcel = crearAnchorDescarga();
+
     public JugadorView(EstadisticaService estadisticaService,
                        TorneoService torneoService,
                        ReporteService reporteService) {
@@ -54,7 +57,6 @@ public class JugadorView extends VerticalLayout {
 
         H2 titulo = new H2("⚽ Panel de Jugador — Estadísticas");
 
-        // ── Filtros ──────────────────────────────────────────────────────────
         ComboBox<TorneoResponse> torneo = new ComboBox<>("Torneo");
         torneo.setItemLabelGenerator(TorneoResponse::nombre);
         torneo.setItems(torneoService.getTorneosActivos());
@@ -65,35 +67,20 @@ public class JugadorView extends VerticalLayout {
         buscarJugador.setWidth("200px");
         buscarJugador.setClearButtonVisible(true);
 
-        // ── Botones exportar — descarga directa vía StreamRegistration ───────
         Button btnPdf = new Button("⬇ PDF", new Icon(VaadinIcon.FILE_TEXT));
-        btnPdf.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
-        btnPdf.getStyle()
-                .set("background", "#1a237e")
-                .set("color", "#ffffff");
+        btnPdf.addThemeVariants(ButtonVariant.LUMO_SMALL);
+        estiloBtnDescarga(btnPdf, "#1a237e");
         btnPdf.setEnabled(false);
 
         Button btnExcel = new Button("⬇ Excel", new Icon(VaadinIcon.TABLE));
-        btnExcel.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_SMALL);
+        btnExcel.addThemeVariants(ButtonVariant.LUMO_SMALL);
+        estiloBtnDescarga(btnExcel, "#1e7e34");
         btnExcel.setEnabled(false);
 
-        btnPdf.addClickListener(e -> {
-            if (torneoSeleccionado == null || datosActuales.isEmpty()) return;
-            String nombre = torneoSeleccionado.nombre();
-            descargarRecurso(new StreamResource(
-                    "estadisticas_" + nombre.replaceAll("[^a-zA-Z0-9]", "_") + ".pdf",
-                    () -> reporteService.generarPdfEstadisticas(nombre, datosActuales)));
-        });
+        anchorPdf.add(btnPdf);
+        anchorExcel.add(btnExcel);
 
-        btnExcel.addClickListener(e -> {
-            if (torneoSeleccionado == null || datosActuales.isEmpty()) return;
-            String nombre = torneoSeleccionado.nombre();
-            descargarRecurso(new StreamResource(
-                    "estadisticas_" + nombre.replaceAll("[^a-zA-Z0-9]", "_") + ".xlsx",
-                    () -> reporteService.generarExcelEstadisticas(nombre, datosActuales)));
-        });
-
-        HorizontalLayout filtros = new HorizontalLayout(torneo, buscarJugador, btnPdf, btnExcel);
+        HorizontalLayout filtros = new HorizontalLayout(torneo, buscarJugador, anchorPdf, anchorExcel);
         filtros.setAlignItems(FlexComponent.Alignment.END);
         filtros.getStyle()
                 .set("background", "var(--lumo-contrast-5pct)")
@@ -102,10 +89,8 @@ public class JugadorView extends VerticalLayout {
                 .set("margin-bottom", "8px");
         filtros.setWidthFull();
 
-        // ── Grid ─────────────────────────────────────────────────────────────
         configurarGrid();
 
-        // ── Eventos ──────────────────────────────────────────────────────────
         torneo.addValueChangeListener(event -> {
             torneoSeleccionado = event.getValue();
             actualizarGrid(buscarJugador.getValue(), btnPdf, btnExcel);
@@ -119,11 +104,28 @@ public class JugadorView extends VerticalLayout {
         setSpacing(true);
     }
 
-    private void descargarRecurso(StreamResource resource) {
-        StreamRegistration registration = VaadinSession.getCurrent()
+    private static Anchor crearAnchorDescarga() {
+        Anchor anchor = new Anchor("", "");
+        anchor.getElement().setAttribute("router-ignore", "");
+        anchor.getElement().setAttribute("download", "");
+        anchor.getStyle().set("text-decoration", "none").set("display", "inline-flex");
+        return anchor;
+    }
+
+    private String registrarStream(StreamResource resource) {
+        StreamRegistration reg = VaadinSession.getCurrent()
                 .getResourceRegistry()
                 .registerResource(resource);
-        UI.getCurrent().getPage().open(registration.getResourceUri().toString());
+        return reg.getResourceUri().toString();
+    }
+
+    private void estiloBtnDescarga(Button btn, String bg) {
+        btn.getStyle()
+                .set("background", bg)
+                .set("color", "#ffffff")
+                .set("border-radius", "8px")
+                .set("font-weight", "600")
+                .set("cursor", "pointer");
     }
 
     private void configurarGrid() {
@@ -135,7 +137,6 @@ public class JugadorView extends VerticalLayout {
         grid.addColumn(EstadisticaResponse::tarjetasAmarillas).setHeader("🟡 Amarillas").setSortable(true);
         grid.addColumn(EstadisticaResponse::tarjetasRojas).setHeader("🔴 Rojas").setSortable(true);
 
-        // Columna de edición — solo admin y organizador
         grid.addComponentColumn(est -> {
             if (!esAdminOOrganizador()) return new com.vaadin.flow.component.html.Span();
             Button btn = new Button("✏️ Editar");
@@ -151,7 +152,7 @@ public class JugadorView extends VerticalLayout {
         if (torneoSeleccionado == null) return;
 
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("✏️ Editar estadísticas — " + est.jugador());
+        dialog.setHeaderTitle("✏️ Estadísticas — " + est.jugador());
         dialog.setWidth("420px");
 
         H3 subtitulo = new H3("Equipo: " + est.equipo());
@@ -159,7 +160,7 @@ public class JugadorView extends VerticalLayout {
                 .set("color", "var(--lumo-secondary-text-color)")
                 .set("font-size", "var(--lumo-font-size-m)");
 
-        ComboBox<Jugador> selectorJugador = new ComboBox<>("Buscar y seleccionar jugador");
+        ComboBox<Jugador> selectorJugador = new ComboBox<>("Seleccionar jugador");
         selectorJugador.setItemLabelGenerator(j -> j.getNombre() + " — " + j.getEquipo().getNombre());
         selectorJugador.setWidthFull();
         try {
@@ -167,7 +168,6 @@ public class JugadorView extends VerticalLayout {
         } catch (Exception ex) {
             selectorJugador.setItems(List.of());
         }
-
         try {
             estadisticaService.getJugadores(torneoSeleccionado.id()).stream()
                     .filter(j -> j.getId().equals(est.jugadorId()))
@@ -175,76 +175,48 @@ public class JugadorView extends VerticalLayout {
                     .ifPresent(selectorJugador::setValue);
         } catch (Exception ignored) {}
 
-        IntegerField goles = new IntegerField("Goles");
-        goles.setMin(0);
-        goles.setValue(est.goles());
-        goles.setStepButtonsVisible(true);
-        goles.setWidth("120px");
-
-        IntegerField asistencias = new IntegerField("Asistencias");
-        asistencias.setMin(0);
-        asistencias.setValue(est.asistencias());
-        asistencias.setStepButtonsVisible(true);
-        asistencias.setWidth("120px");
-
-        IntegerField partidosJugados = new IntegerField("Partidos Jugados");
-        partidosJugados.setMin(0);
-        partidosJugados.setValue(est.partidosJugados());
-        partidosJugados.setStepButtonsVisible(true);
-        partidosJugados.setWidth("140px");
-
-        IntegerField amarillas = new IntegerField("🟡 Amarillas");
-        amarillas.setMin(0);
-        amarillas.setValue(est.tarjetasAmarillas());
-        amarillas.setStepButtonsVisible(true);
-        amarillas.setWidth("120px");
-
-        IntegerField rojas = new IntegerField("🔴 Rojas");
-        rojas.setMin(0);
-        rojas.setValue(est.tarjetasRojas());
-        rojas.setStepButtonsVisible(true);
-        rojas.setWidth("120px");
-
-        HorizontalLayout fila1 = new HorizontalLayout(goles, asistencias, partidosJugados);
-        HorizontalLayout fila2 = new HorizontalLayout(amarillas, rojas);
+        IntegerField goles         = campoCantidad("Goles",           est.goles(),            "120px");
+        IntegerField asistencias   = campoCantidad("Asistencias",     est.asistencias(),       "120px");
+        IntegerField partidos      = campoCantidad("Partidos",        est.partidosJugados(),   "120px");
+        IntegerField amarillas     = campoCantidad("🟡 Amarillas",    est.tarjetasAmarillas(), "120px");
+        IntegerField rojas         = campoCantidad("🔴 Rojas",        est.tarjetasRojas(),     "120px");
 
         Button btnGuardar = new Button("Guardar", e -> {
             Jugador jugadorSel = selectorJugador.getValue();
             if (jugadorSel == null) {
-                Notification n = Notification.show("Selecciona un jugador.");
-                n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                Notification.show("Selecciona un jugador.").addThemeVariants(NotificationVariant.LUMO_ERROR);
                 return;
             }
             try {
                 estadisticaService.actualizarEstadistica(
-                        jugadorSel.getId(),
-                        torneoSeleccionado.id(),
-                        goles.getValue(),
-                        asistencias.getValue(),
-                        partidosJugados.getValue(),
-                        amarillas.getValue(),
-                        rojas.getValue()
-                );
-                Notification n = Notification.show("Estadísticas guardadas correctamente.");
-                n.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                        jugadorSel.getId(), torneoSeleccionado.id(),
+                        goles.getValue(), asistencias.getValue(),
+                        partidos.getValue(), amarillas.getValue(), rojas.getValue());
+                Notification.show("Estadísticas guardadas.").addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 actualizarGridSilencioso();
                 dialog.close();
             } catch (IllegalArgumentException ex) {
-                Notification n = Notification.show(ex.getMessage());
-                n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                Notification.show(ex.getMessage()).addThemeVariants(NotificationVariant.LUMO_ERROR);
             }
         });
         btnGuardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
         Button btnCancelar = new Button("Cancelar", e -> dialog.close());
 
-        VerticalLayout contenido = new VerticalLayout(subtitulo, selectorJugador,
-                fila1, fila2, new HorizontalLayout(btnGuardar, btnCancelar));
-        contenido.setPadding(false);
-        contenido.setSpacing(true);
-
-        dialog.add(contenido);
+        dialog.add(new VerticalLayout(
+                subtitulo, selectorJugador,
+                new HorizontalLayout(goles, asistencias, partidos),
+                new HorizontalLayout(amarillas, rojas),
+                new HorizontalLayout(btnGuardar, btnCancelar)));
         dialog.open();
+    }
+
+    private IntegerField campoCantidad(String label, int valor, String width) {
+        IntegerField f = new IntegerField(label);
+        f.setMin(0);
+        f.setValue(valor);
+        f.setStepButtonsVisible(true);
+        f.setWidth(width);
+        return f;
     }
 
     private void actualizarGrid(String filtroNombre, Button btnPdf, Button btnExcel) {
@@ -253,6 +225,8 @@ public class JugadorView extends VerticalLayout {
             datosActuales = new ArrayList<>();
             btnPdf.setEnabled(false);
             btnExcel.setEnabled(false);
+            anchorPdf.setHref("");
+            anchorExcel.setHref("");
             return;
         }
 
@@ -261,6 +235,19 @@ public class JugadorView extends VerticalLayout {
         boolean hayDatos = !datosActuales.isEmpty();
         btnPdf.setEnabled(hayDatos);
         btnExcel.setEnabled(hayDatos);
+
+        if (hayDatos) {
+            String nombre = torneoSeleccionado.nombre();
+            String safeName = nombre.replaceAll("[^a-zA-Z0-9]", "_");
+
+            anchorPdf.setHref(registrarStream(new StreamResource(
+                    safeName + "_estadisticas.pdf",
+                    () -> reporteService.generarPdfEstadisticas(nombre, datosActuales))));
+
+            anchorExcel.setHref(registrarStream(new StreamResource(
+                    safeName + "_estadisticas.xlsx",
+                    () -> reporteService.generarExcelEstadisticas(nombre, datosActuales))));
+        }
     }
 
     private void actualizarGridSilencioso() {

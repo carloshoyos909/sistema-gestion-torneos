@@ -26,42 +26,76 @@ public class HomeView extends VerticalLayout {
         boolean esOrganizador = tieneRol("ROLE_ORGANIZADOR");
 
         H2 bienvenida = new H2("Bienvenido al Sistema de Gestión de Torneos");
-        bienvenida.getStyle().set("margin-bottom", "4px");
+        bienvenida.getStyle().set("margin-bottom", "4px").set("color", "#1a1a2e");
 
         Paragraph descripcion = new Paragraph(
                 "Usa el menú lateral o las tarjetas de abajo para navegar.");
-        descripcion.getStyle().set("color", "var(--lumo-secondary-text-color)")
+        descripcion.getStyle()
+                .set("color", "var(--lumo-secondary-text-color)")
                 .set("margin-top", "0");
 
-        // Grid de tarjetas con FlexLayout (wrap automático en 2-3 columnas)
         FlexLayout grid = new FlexLayout();
         grid.setFlexWrap(FlexLayout.FlexWrap.WRAP);
         grid.getStyle().set("gap", "20px").set("padding", "8px 0");
         grid.setWidthFull();
 
         if (esAdmin || esOrganizador) {
-            grid.add(crearTarjeta(VaadinIcon.TROPHY,     "Crear Torneo",
-                    "Registra una nueva competencia con nombre, deporte y categoría.", "crear-torneo", "#fff8e1", "#e65100"));
-            grid.add(crearTarjeta(VaadinIcon.USERS,      "Registrar Equipo",
-                    "Inscribe un equipo y agrega su nómina de jugadores.", "registrar-equipo", "#e8eaf6", "#1a237e"));
-            grid.add(crearTarjeta(VaadinIcon.CALENDAR,   "Programar Partido",
-                    "Asigna fechas, horas y canchas a los encuentros del fixture.", "programar-partido", "#e8f5e9", "#2e7d32"));
-            grid.add(crearTarjeta(VaadinIcon.CLIPBOARD,  "Panel Organizador",
-                    "Genera el fixture automáticamente según el formato del torneo.", "organizador", "#f3e5f5", "#6a1b9a"));
+            // Paleta coherente: verde para acciones positivas, naranja para gestión
+            grid.add(crearTarjeta(VaadinIcon.TROPHY,
+                    "Crear Torneo",
+                    "Registra una nueva competencia con nombre, deporte y categoría.",
+                    "crear-torneo",
+                    "#fff3e0", "#e65100"));  // naranja
+
+            grid.add(crearTarjeta(VaadinIcon.USERS,
+                    "Registrar Equipo",
+                    "Inscribe un equipo y agrega su nómina de jugadores.",
+                    "registrar-equipo",
+                    "#e8f5e9", "#2e7d32"));  // verde
+
+            grid.add(crearTarjeta(VaadinIcon.CALENDAR,
+                    "Programar Partido",
+                    "Asigna fechas, horas y canchas a los encuentros del fixture.",
+                    "programar-partido",
+                    "#e8f5e9", "#1b5e20"));  // verde oscuro
+
+            grid.add(crearTarjeta(VaadinIcon.CLIPBOARD,
+                    "Panel Organizador",
+                    "Genera el fixture automáticamente según el formato del torneo.",
+                    "organizador",
+                    "#e8f5e9", "#00a651"));  // verde primario
         }
 
-        grid.add(crearTarjeta(VaadinIcon.GROUP,          "Consultar Equipos",
-                "Consulta los equipos inscritos en cada torneo.", "equipos", "#e8eaf6", "#1a237e"));
-        grid.add(crearTarjeta(VaadinIcon.LIST,           "Consultar Fixture",
-                "Revisa el calendario de partidos programados.", "fixture", "#e0f2f1", "#00695c"));
-        grid.add(crearTarjeta(VaadinIcon.MEDAL,          "Tabla de Posiciones",
-                "Consulta la clasificación actualizada del torneo.", "tabla-posiciones", "#fff8e1", "#e65100"));
-        grid.add(crearTarjeta(VaadinIcon.CHART,          "Panel Jugador",
-                "Consulta y gestiona estadísticas de jugadores.", "jugador", "#e8f5e9", "#2e7d32"));
+        grid.add(crearTarjeta(VaadinIcon.GROUP,
+                "Consultar Equipos",
+                "Consulta los equipos inscritos en cada torneo.",
+                "equipos",
+                "#e8f5e9", "#2e7d32"));  // verde
+
+        grid.add(crearTarjeta(VaadinIcon.LIST,
+                "Consultar Fixture",
+                "Revisa el calendario de partidos programados.",
+                "fixture",
+                "#e8f5e9", "#00a651"));  // verde primario
+
+        grid.add(crearTarjeta(VaadinIcon.MEDAL,
+                "Tabla de Posiciones",
+                "Consulta la clasificación actualizada del torneo.",
+                "tabla-posiciones",
+                "#fff3e0", "#e65100"));  // naranja
+
+        grid.add(crearTarjeta(VaadinIcon.CHART,
+                "Panel Jugador",
+                "Consulta y gestiona estadísticas de jugadores.",
+                "jugador",
+                "#e8f5e9", "#1b5e20"));  // verde oscuro
 
         if (esAdmin) {
-            grid.add(crearTarjeta(VaadinIcon.COG,        "Administración",
-                    "Gestiona los usuarios del sistema.", "admin", "#fdecea", "#b71c1c"));
+            grid.add(crearTarjeta(VaadinIcon.COG,
+                    "Administración",
+                    "Gestiona los usuarios del sistema.",
+                    "admin",
+                    "#fdecea", "#b71c1c"));  // rojo — acción de admin
         }
 
         setAlignItems(FlexComponent.Alignment.START);
@@ -73,10 +107,10 @@ public class HomeView extends VerticalLayout {
     private VerticalLayout crearTarjeta(VaadinIcon vaadinIcon, String titulo,
                                          String descripcion, String ruta,
                                          String iconBg, String iconColor) {
-        // Ícono con fondo circular
         Icon icon = new Icon(vaadinIcon);
+        // setColor() aplica correctamente el color al SVG del icono
+        icon.setColor(iconColor);
         icon.getStyle()
-                .set("color", iconColor)
                 .set("width", "24px")
                 .set("height", "24px");
 
@@ -115,8 +149,6 @@ public class HomeView extends VerticalLayout {
         tarjeta.addClassName("tarjeta-home");
         tarjeta.setPadding(true);
         tarjeta.setSpacing(false);
-
-        // Toda la tarjeta es cliqueable
         tarjeta.addClickListener(e -> UI.getCurrent().navigate(ruta));
         tarjeta.getStyle().set("cursor", "pointer");
 
