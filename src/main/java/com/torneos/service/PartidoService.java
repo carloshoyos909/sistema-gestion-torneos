@@ -1,21 +1,20 @@
 package com.torneos.service;
 
-import com.torneos.dto.PartidoResponse;
-import com.torneos.model.Equipo;
-import com.torneos.model.Partido;
-import com.torneos.model.Rol;
-import com.torneos.model.Torneo;
-import com.torneos.model.Usuario;
-import com.torneos.repository.PartidoRepository;
-import com.torneos.repository.UsuarioRepository;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
+import com.torneos.dto.PartidoResponse;
+import com.torneos.model.Equipo;
+import com.torneos.model.Partido;
+import com.torneos.model.Torneo;
+import com.torneos.repository.PartidoRepository;
+import com.torneos.repository.UsuarioRepository;
 
 @Service
 public class PartidoService {
@@ -81,28 +80,9 @@ public class PartidoService {
 
     @Transactional(readOnly = true)
     public List<PartidoResponse> getPartidos(Long torneoId) {
-        torneoService.buscarEntidadPorId(torneoId);
-        return partidoRepository.findByTorneoIdOrderByFechaAscHoraAsc(torneoId).stream()
+        return partidoRepository.findByTorneoIdWithEquipos(torneoId).stream()
                 .map(this::toResponse)
                 .toList();
-    }
-
-    // ── Verificar si el usuario actual puede modificar el partido ─────────
-    public boolean puedeModificar(Long torneoId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) return false;
-
-        // ADMIN siempre puede
-        if (auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) return true;
-
-        // ORGANIZADOR solo si es dueño
-        try {
-            torneoService.validarPropietario(torneoId);
-            return true;
-        } catch (SecurityException e) {
-            return false;
-        }
     }
 
     private PartidoResponse toResponse(Partido p) {

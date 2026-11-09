@@ -60,23 +60,12 @@ public class TorneoService {
         return torneoRepository.findAll().stream().map(this::toResponse).toList();
     }
 
-    // ── Torneos activos filtrados por rol ─────────────────────────────────────
-    // ADMIN → ve todos | ORGANIZADOR → solo los suyos | JUGADOR → todos activos
+    // ── Torneos activos — TODOS los roles ven TODOS los torneos activos ──────
+    // La restricción de propietario aplica solo al editar, no al consultar
     @Transactional(readOnly = true)
     public List<TorneoResponse> getTorneosActivos() {
-        Usuario usuario = getUsuarioAutenticado();
-
-        if (usuario == null || usuario.getRol() == Rol.ADMIN || usuario.getRol() == Rol.JUGADOR) {
-            return torneoRepository.findAll().stream()
-                    .filter(Torneo::isActivo)
-                    .map(this::toResponse)
-                    .toList();
-        }
-
-        // ORGANIZADOR → solo sus torneos activos
-        return torneoRepository
-                .findByCreadorUsernameAndActivoTrue(usuario.getUsername())
-                .stream()
+        return torneoRepository.findAll().stream()
+                .filter(Torneo::isActivo)
                 .map(this::toResponse)
                 .toList();
     }
@@ -105,14 +94,23 @@ public class TorneoService {
     }
 
     // ── Validar que el usuario actual puede modificar el torneo ──────────────
+    @Transactional(readOnly = true)
     public void validarPropietario(Long torneoId) {
         Usuario usuario = getUsuarioAutenticado();
         if (usuario == null) throw new SecurityException("No autenticado.");
-        if (usuario.getRol() == Rol.ADMIN) return; // admin puede todo
+        if (usuario.getRol() == Rol.ADMIN) return;
 
         Torneo torneo = buscarEntidadPorId(torneoId);
-        if (torneo.getCreador() == null ||
-                !torneo.getCreador().getUsername().equals(usuario.getUsername())) {
+
+        // Si el torneo no tiene creador asignado (datos migrados antes de V5),
+        // solo el ADMIN puede modificarlo
+        if (torneo.getCreador() == null) {
+            throw new SecurityException(
+                    "El torneo \"" + torneo.getNombre() + "\" no tiene propietario asignado. " +
+                    "Solo el Administrador puede modificarlo.");
+        }
+
+        if (!torneo.getCreador().getUsername().equals(usuario.getUsername())) {
             throw new SecurityException(
                     "No tienes permiso para modificar el torneo \"" + torneo.getNombre() + "\".");
         }

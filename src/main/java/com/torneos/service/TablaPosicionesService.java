@@ -1,17 +1,18 @@
 package com.torneos.service;
 
-import com.torneos.dto.TablaPosicionesDTO;
-import com.torneos.model.Equipo;
-import com.torneos.model.Partido;
-import com.torneos.repository.PartidoRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.torneos.dto.TablaPosicionesDTO;
+import com.torneos.model.Equipo;
+import com.torneos.model.Partido;
+import com.torneos.repository.PartidoRepository;
 
 @Service
 public class TablaPosicionesService {
@@ -39,7 +40,7 @@ public class TablaPosicionesService {
         }
 
         // Luego procesar solo los partidos jugados
-        List<Partido> partidos = partidoRepository.findByTorneoIdOrderByFechaAscHoraAsc(torneoId);
+        List<Partido> partidos = partidoRepository.findByTorneoIdWithEquipos(torneoId);
         for (Partido p : partidos) {
             if (p.isJugado() && p.getGolesLocal() != null && p.getGolesVisitante() != null) {
                 String local = p.getEquipoLocal().getNombre();

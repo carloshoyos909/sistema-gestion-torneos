@@ -30,6 +30,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,6 +85,7 @@ public class FixtureView extends VerticalLayout {
                 btnPdf.setEnabled(false);
                 btnExcel.setEnabled(false);
             } else {
+                // LECTURA LIBRE — sin validación de propietario
                 partidosActuales = partidoService.getPartidos(torneoSeleccionado.id());
                 renderizarTarjetas();
                 btnPdf.setEnabled(true);
@@ -107,20 +109,24 @@ public class FixtureView extends VerticalLayout {
 
     private void renderizarTarjetas() {
         contenedorTarjetas.removeAll();
+        if (partidosActuales == null || partidosActuales.isEmpty()) return;
+
+        // Calcular puedeModificar LOCALMENTE sin consultar la BD
+        // Solo usa el SecurityContext (ya cargado) y el creadorUsername del DTO
+        boolean puedeEditar = calcularPuedeEditar();
 
         // Agrupar por fase
-        Map<String, List<PartidoResponse>> porFase = new java.util.LinkedHashMap<>();
+        Map<String, List<PartidoResponse>> porFase = new LinkedHashMap<>();
         for (PartidoResponse p : partidosActuales) {
             String fase = p.fase() != null ? p.fase() : "PARTIDOS";
-            porFase.computeIfAbsent(fase, k -> new java.util.ArrayList<>()).add(p);
+            porFase.computeIfAbsent(fase, k -> new ArrayList<>()).add(p);
         }
 
         boolean multiFase = porFase.size() > 1;
 
         for (Map.Entry<String, List<PartidoResponse>> entry : porFase.entrySet()) {
             if (multiFase) {
-                com.vaadin.flow.component.html.H3 tituloFase =
-                        new com.vaadin.flow.component.html.H3(entry.getKey());
+                H3 tituloFase = new H3(entry.getKey());
                 tituloFase.getStyle()
                         .set("color", "#1a237e")
                         .set("border-bottom", "2px solid var(--lumo-primary-color)")
@@ -130,13 +136,45 @@ public class FixtureView extends VerticalLayout {
                 contenedorTarjetas.add(tituloFase);
             }
             for (PartidoResponse p : entry.getValue()) {
-                contenedorTarjetas.add(crearMatchCard(p));
+                try {
+                    contenedorTarjetas.add(crearMatchCard(p, puedeEditar));
+                } catch (Exception ex) {
+                    // Aislamiento: si falla una tarjeta no destruye el resto
+                    System.err.println("Error renderizando partido " + p.id() + ": " + ex.getMessage());
+                }
             }
         }
     }
 
-    private VerticalLayout crearMatchCard(PartidoResponse partido) {
-        // Badge de estado
+    /**
+     * Calcula si el usuario actual puede editar partidos de este torneo.
+     * NO hace consultas a la BD — usa solo el SecurityContext y el DTO.
+     * ADMIN → siempre puede.
+     * ORGANIZADOR → solo si es el creador del torneo.
+     * JUGADOR → nunca puede.
+     */
+    private boolean calcularPuedeEditar() {
+        if (torneoSeleccionado == null) return false;
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) return false;
+
+        String username = auth.getName();
+        boolean esAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (esAdmin) return true;
+
+        boolean esOrganizador = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ORGANIZADOR"));
+        if (!esOrganizador) return false;
+
+        // Organizador solo puede si es el creador del torneo
+        String creador = torneoSeleccionado.creadorUsername();
+        return creador != null && creador.equals(username);
+    }
+
+    private VerticalLayout crearMatchCard(PartidoResponse partido, boolean puedeEditar) {
         Span estadoBadge = new Span(partido.estado());
         if (partido.jugado()) {
             estadoBadge.getElement().getThemeList().add("badge success");
@@ -145,7 +183,6 @@ public class FixtureView extends VerticalLayout {
             estadoBadge.getElement().getThemeList().add(pasado ? "badge error" : "badge");
         }
 
-        // Marcador
         Span localNombre = new Span(partido.equipoLocal());
         localNombre.addClassName("match-team");
 
@@ -163,7 +200,6 @@ public class FixtureView extends VerticalLayout {
         enfrentamiento.setWidthFull();
         enfrentamiento.setSpacing(true);
 
-        // Info inferior
         Paragraph info = new Paragraph("📅 " + partido.fecha() + "  ⏰ " + partido.hora() + "  📍 " + partido.cancha());
         info.addClassName("match-info");
 
@@ -172,15 +208,11 @@ public class FixtureView extends VerticalLayout {
         footer.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         footer.setAlignItems(FlexComponent.Alignment.CENTER);
 
-        if (esAdminOOrganizador()) {
-            // Verificar que el usuario puede modificar ESTE partido específico
-            if (torneoSeleccionado != null &&
-                    partidoService.puedeModificar(torneoSeleccionado.id())) {
-                Button btnResultado = new Button(partido.jugado() ? "✏️" : "⚽",
-                        e -> abrirDialogoResultado(partido));
-                btnResultado.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-                footer.add(btnResultado);
-            }
+        if (puedeEditar) {
+            Button btnResultado = new Button(partido.jugado() ? "✏️" : "⚽",
+                    e -> abrirDialogoResultado(partido));
+            btnResultado.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+            footer.add(btnResultado);
         }
 
         VerticalLayout card = new VerticalLayout(enfrentamiento, info, footer);
@@ -192,7 +224,7 @@ public class FixtureView extends VerticalLayout {
 
     private void abrirDialogoResultado(PartidoResponse partido) {
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("⚽ Resultado: " + partido.equipoLocal() + " vs " + partido.equipoVisitante());
+        dialog.setHeaderTitle("⚽ " + partido.equipoLocal() + " vs " + partido.equipoVisitante());
 
         IntegerField golesLocal = new IntegerField(partido.equipoLocal());
         golesLocal.setMin(0);
@@ -233,13 +265,5 @@ public class FixtureView extends VerticalLayout {
                 new HorizontalLayout(golesLocal, golesVisitante),
                 new HorizontalLayout(btnGuardar, btnCancelar)));
         dialog.open();
-    }
-
-    private boolean esAdminOOrganizador() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) return false;
-        return auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
-                        || a.getAuthority().equals("ROLE_ORGANIZADOR"));
     }
 }
