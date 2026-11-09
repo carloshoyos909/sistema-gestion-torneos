@@ -58,11 +58,3 @@ El archivo `.env` no debe subirse al repositorio.
 ## API
 
 La documentación de endpoints se encuentra en [`docs/API.md`](docs/API.md).
-
-## Arquitectura
-
-La documentación técnica se encuentra en [`docs/ARQUITECTURA-SPRINT-2.md`](docs/ARQUITECTURA-SPRINT-2.md).
-
-## Documentación del Sprint
-
-Ver [`docs/SPRINT-2.md`](docs/SPRINT-2.md).
