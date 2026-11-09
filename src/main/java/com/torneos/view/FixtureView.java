@@ -173,10 +173,14 @@ public class FixtureView extends VerticalLayout {
         footer.setAlignItems(FlexComponent.Alignment.CENTER);
 
         if (esAdminOOrganizador()) {
-            Button btnResultado = new Button(partido.jugado() ? "✏️" : "⚽",
-                    e -> abrirDialogoResultado(partido));
-            btnResultado.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-            footer.add(btnResultado);
+            // Verificar que el usuario puede modificar ESTE partido específico
+            if (torneoSeleccionado != null &&
+                    partidoService.puedeModificar(torneoSeleccionado.id())) {
+                Button btnResultado = new Button(partido.jugado() ? "✏️" : "⚽",
+                        e -> abrirDialogoResultado(partido));
+                btnResultado.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+                footer.add(btnResultado);
+            }
         }
 
         VerticalLayout card = new VerticalLayout(enfrentamiento, info, footer);
@@ -215,6 +219,11 @@ public class FixtureView extends VerticalLayout {
             } catch (IllegalArgumentException ex) {
                 Notification n = Notification.show(ex.getMessage());
                 n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            } catch (SecurityException ex) {
+                Notification n = Notification.show("No tienes permiso para modificar este partido.",
+                        3000, Notification.Position.MIDDLE);
+                n.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                dialog.close();
             }
         });
         btnGuardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);

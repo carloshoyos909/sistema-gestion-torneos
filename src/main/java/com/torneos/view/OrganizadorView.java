@@ -53,7 +53,7 @@ public class OrganizadorView extends VerticalLayout {
         // Mostrar TODOS los torneos
         ComboBox<TorneoResponse> torneo = new ComboBox<>("Torneo");
         torneo.setItemLabelGenerator(t -> t.nombre() + " — " + t.formato().getLabel());
-        torneo.setItems(torneoService.getTorneos());
+        torneo.setItems(torneoService.getTorneosParaGestion());
         torneo.setWidth("450px");
 
         DatePicker fechaInicio = new DatePicker("Fecha de inicio");

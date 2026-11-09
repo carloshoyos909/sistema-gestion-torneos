@@ -45,7 +45,7 @@ public class ProgramarPartidoView extends VerticalLayout implements BeforeEnterO
         torneo.setItemLabelGenerator(TorneoResponse::nombre);
         torneo.setRequired(true);
         torneo.setWidthFull();
-        torneo.setItems(torneoService.getTorneosActivos());
+        torneo.setItems(torneoService.getTorneosParaGestion());
         torneo.addValueChangeListener(event -> cargarEquipos());
 
         equipoLocal.setItemLabelGenerator(EquipoResponse::nombre);
@@ -105,8 +105,7 @@ public class ProgramarPartidoView extends VerticalLayout implements BeforeEnterO
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        // Recarga torneos activos cada vez que se entra a la vista
-        torneo.setItems(torneoService.getTorneosActivos());
+        torneo.setItems(torneoService.getTorneosParaGestion());
     }
 
     private void cargarEquipos() {

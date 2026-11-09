@@ -1,30 +1,16 @@
 package com.torneos.dto;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import jakarta.validation.constraints.NotNull;
 
-public class PartidoRequest {
-
-    @NotNull(message = "El ID del equipo local es obligatorio")
-    private Long equipoLocalId;
-
-    @NotNull(message = "El ID del equipo visitante es obligatorio")
-    private Long equipoVisitanteId;
-
-    public PartidoRequest() {}
-
-    public Long getEquipoLocalId() {
-        return equipoLocalId;
-    }
-
-    public void setEquipoLocalId(Long equipoLocalId) {
-        this.equipoLocalId = equipoLocalId;
-    }
-
-    public Long getEquipoVisitanteId() {
-        return equipoVisitanteId;
-    }
-
-    public void setEquipoVisitanteId(Long equipoVisitanteId) {
-        this.equipoVisitanteId = equipoVisitanteId;
-    }
-}
+public record PartidoRequest(
+        @NotNull(message = "El ID del equipo local es obligatorio")
+        Long equipoLocalId,
+        @NotNull(message = "El ID del equipo visitante es obligatorio")
+        Long equipoVisitanteId,
+        LocalDate fecha,
+        LocalTime hora,
+        String cancha
+) {}

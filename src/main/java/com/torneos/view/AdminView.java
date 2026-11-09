@@ -1,7 +1,14 @@
 package com.torneos.view;
 
+import java.util.List;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.torneos.dto.TorneoResponse;
 import com.torneos.model.Rol;
 import com.torneos.model.Usuario;
+import com.torneos.service.TorneoService;
 import com.torneos.service.UsuarioService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -23,11 +30,8 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.RolesAllowed;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.List;
+import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "admin", layout = MainView.class)
 @PageTitle("Panel de Administración")
@@ -35,10 +39,13 @@ import java.util.List;
 public class AdminView extends VerticalLayout {
 
     private final UsuarioService usuarioService;
+    private final TorneoService torneoService;
     private final Grid<Usuario> grid = new Grid<>(Usuario.class, false);
+    private final Grid<TorneoResponse> gridTorneos = new Grid<>(TorneoResponse.class, false);
 
-    public AdminView(UsuarioService usuarioService) {
+    public AdminView(UsuarioService usuarioService, TorneoService torneoService) {
         this.usuarioService = usuarioService;
+        this.torneoService = torneoService;
 
         H2 titulo = new H2("⚙️ Panel de Administración");
 
@@ -66,7 +73,12 @@ public class AdminView extends VerticalLayout {
                 e -> abrirDialogoNuevoUsuario());
         btnNuevoUsuario.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        add(titulo, kpis, subtitulo, btnNuevoUsuario, grid);
+        // ── Sección Gestión de Torneos ────────────────────────────────────────
+        H3 tituloTorneos = new H3("Gestión de torneos");
+        configurarGridTorneos();
+        cargarTorneos();
+
+        add(titulo, kpis, subtitulo, btnNuevoUsuario, grid, tituloTorneos, gridTorneos);
         setPadding(true);
         setSpacing(true);
     }
@@ -204,6 +216,81 @@ public class AdminView extends VerticalLayout {
     }
 
     private void cargarUsuarios() { grid.setItems(usuarioService.getTodos()); }
+    private void cargarTorneos() { gridTorneos.setItems(torneoService.getTorneos()); }
+
+    private void configurarGridTorneos() {
+        gridTorneos.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+        gridTorneos.addColumn(TorneoResponse::nombre).setHeader("Torneo").setSortable(true);
+        gridTorneos.addColumn(TorneoResponse::deporte).setHeader("Deporte");
+        gridTorneos.addColumn(TorneoResponse::categoria).setHeader("Categoría");
+        gridTorneos.addColumn(t -> t.formato().getLabel()).setHeader("Formato");
+        gridTorneos.addComponentColumn(t -> {
+            Span badge = new Span(t.activo() ? "Activo" : "Inactivo");
+            badge.getElement().getThemeList().add(t.activo() ? "badge success" : "badge error");
+            return badge;
+        }).setHeader("Estado").setWidth("100px").setFlexGrow(0);
+
+        gridTorneos.addComponentColumn(t -> {
+            Button btnFixture = new Button("🗑️ Fixture", new Icon(VaadinIcon.TRASH));
+            btnFixture.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ERROR,
+                    ButtonVariant.LUMO_TERTIARY);
+            btnFixture.addClickListener(e -> confirmarAccion(
+                    "¿Eliminar todos los partidos del torneo \"" + t.nombre() + "\"?",
+                    "Esto borrará el fixture completo pero mantiene el torneo y los equipos.",
+                    () -> {
+                        torneoService.eliminarFixture(t.id());
+                        mostrarExito("Fixture del torneo \"" + t.nombre() + "\" eliminado.");
+                        cargarTorneos();
+                    }));
+
+            Button btnTorneo = new Button("🗑️ Torneo", new Icon(VaadinIcon.TRASH));
+            btnTorneo.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ERROR);
+            btnTorneo.addClickListener(e -> confirmarAccion(
+                    "¿Eliminar el torneo \"" + t.nombre() + "\" completamente?",
+                    "Se eliminarán el torneo, todos sus equipos, jugadores, partidos y estadísticas. Esta acción NO se puede deshacer.",
+                    () -> {
+                        torneoService.eliminarTorneo(t.id());
+                        mostrarExito("Torneo \"" + t.nombre() + "\" eliminado.");
+                        cargarTorneos();
+                    }));
+
+            HorizontalLayout acciones = new HorizontalLayout(btnFixture, btnTorneo);
+            acciones.setSpacing(true);
+            return acciones;
+        }).setHeader("Acciones").setWidth("220px").setFlexGrow(0);
+
+        gridTorneos.setWidthFull();
+    }
+
+    private void confirmarAccion(String pregunta, String detalle, Runnable accion) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("⚠️ Confirmar acción");
+
+        Span msg = new Span(pregunta);
+        msg.getStyle().set("font-weight", "600");
+
+        Span det = new Span(detalle);
+        det.getStyle().set("color", "var(--lumo-secondary-text-color)")
+                .set("font-size", "var(--lumo-font-size-s)");
+
+        Button btnConfirmar = new Button("Confirmar", e -> {
+            try {
+                accion.run();
+            } catch (Exception ex) {
+                mostrarError("Error: " + ex.getMessage());
+            }
+            dialog.close();
+        });
+        btnConfirmar.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
+
+        Button btnCancelar = new Button("Cancelar", e -> dialog.close());
+
+        VerticalLayout content = new VerticalLayout(msg, det,
+                new HorizontalLayout(btnConfirmar, btnCancelar));
+        content.setSpacing(true);
+        dialog.add(content);
+        dialog.open();
+    }
     private String obtenerUsernameActual() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null ? auth.getName() : "";

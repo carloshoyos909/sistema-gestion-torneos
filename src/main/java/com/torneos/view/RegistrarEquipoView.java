@@ -1,5 +1,8 @@
 package com.torneos.view;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.torneos.dto.EquipoResponse;
 import com.torneos.dto.TorneoResponse;
 import com.torneos.service.EquipoService;
@@ -13,10 +16,8 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.RolesAllowed;
 
-import java.util.Arrays;
-import java.util.List;
+import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "registrar-equipo", layout = MainView.class)
 @PageTitle("Registrar Equipo")
@@ -87,7 +88,7 @@ public class RegistrarEquipoView extends VerticalLayout {
     }
 
     private void cargarTorneos() {
-        torneo.setItems(torneoService.getTorneosActivos());
+        torneo.setItems(torneoService.getTorneosParaGestion());
     }
 
     private void mostrarError(String mensaje) {

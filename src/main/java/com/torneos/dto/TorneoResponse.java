@@ -8,5 +8,6 @@ public record TorneoResponse(
         String deporte,
         String categoria,
         boolean activo,
-        FormatoTorneo formato
+        FormatoTorneo formato,
+        String creadorUsername
 ) {}
