@@ -5,13 +5,12 @@ import com.torneos.dto.TorneoResponse;
 import com.torneos.service.PartidoService;
 import com.torneos.service.ReporteService;
 import com.torneos.service.TorneoService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -21,10 +20,13 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinSession;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -54,23 +56,36 @@ public class FixtureView extends VerticalLayout {
         torneo.setItems(torneoService.getTorneosActivos());
         torneo.setWidth("350px");
 
-        Button btnPdf = new Button("PDF", new Icon(VaadinIcon.FILE_TEXT));
-        btnPdf.addThemeVariants(ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_SMALL);
+        // ── Botones de descarga usando StreamResource + Page.open() ───────────
+        // Este patrón evita el bug de Vaadin donde Anchor+Button descarga .htm
+        Button btnPdf = new Button("⬇ PDF", new Icon(VaadinIcon.FILE_TEXT));
+        btnPdf.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+        btnPdf.getStyle()
+                .set("background", "#1a237e")
+                .set("color", "#ffffff");
         btnPdf.setEnabled(false);
 
-        Button btnExcel = new Button("Excel", new Icon(VaadinIcon.TABLE));
+        Button btnExcel = new Button("⬇ Excel", new Icon(VaadinIcon.TABLE));
         btnExcel.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_SMALL);
         btnExcel.setEnabled(false);
 
-        Anchor anchorPdf = new Anchor("", "");
-        anchorPdf.getElement().setAttribute("download", true);
-        anchorPdf.add(btnPdf);
-        anchorPdf.getStyle().set("text-decoration", "none");
+        btnPdf.addClickListener(e -> {
+            if (torneoSeleccionado == null || partidosActuales.isEmpty()) return;
+            String nombre = torneoSeleccionado.nombre();
+            StreamResource resource = new StreamResource(
+                    "fixture_" + nombre.replaceAll("[^a-zA-Z0-9]", "_") + ".pdf",
+                    () -> reporteService.generarPdfFixture(nombre, partidosActuales));
+            descargarRecurso(resource);
+        });
 
-        Anchor anchorExcel = new Anchor("", "");
-        anchorExcel.getElement().setAttribute("download", true);
-        anchorExcel.add(btnExcel);
-        anchorExcel.getStyle().set("text-decoration", "none");
+        btnExcel.addClickListener(e -> {
+            if (torneoSeleccionado == null || partidosActuales.isEmpty()) return;
+            String nombre = torneoSeleccionado.nombre();
+            StreamResource resource = new StreamResource(
+                    "fixture_" + nombre.replaceAll("[^a-zA-Z0-9]", "_") + ".xlsx",
+                    () -> reporteService.generarExcelFixture(nombre, partidosActuales));
+            descargarRecurso(resource);
+        });
 
         contenedorTarjetas.setFlexWrap(FlexLayout.FlexWrap.WRAP);
         contenedorTarjetas.getStyle().set("gap", "16px").set("padding", "8px 0");
@@ -86,49 +101,67 @@ public class FixtureView extends VerticalLayout {
             } else {
                 partidosActuales = partidoService.getPartidos(torneoSeleccionado.id());
                 renderizarTarjetas();
-                btnPdf.setEnabled(true);
-                btnExcel.setEnabled(true);
-                String nombre = torneoSeleccionado.nombre();
-                anchorPdf.setHref(new StreamResource(
-                        "fixture_" + nombre.replaceAll("\\s+", "_") + ".pdf",
-                        () -> reporteService.generarPdfFixture(nombre, partidosActuales)));
-                anchorExcel.setHref(new StreamResource(
-                        "fixture_" + nombre.replaceAll("\\s+", "_") + ".xlsx",
-                        () -> reporteService.generarExcelFixture(nombre, partidosActuales)));
+                boolean hayPartidos = !partidosActuales.isEmpty();
+                btnPdf.setEnabled(hayPartidos);
+                btnExcel.setEnabled(hayPartidos);
             }
         });
 
-        HorizontalLayout toolbar = new HorizontalLayout(torneo, anchorPdf, anchorExcel);
+        HorizontalLayout toolbar = new HorizontalLayout(torneo, btnPdf, btnExcel);
         toolbar.setAlignItems(FlexComponent.Alignment.END);
+        toolbar.setSpacing(true);
 
         add(toolbar, contenedorTarjetas);
         setPadding(true);
     }
 
+    /**
+     * Registra el StreamResource en la sesión de Vaadin y abre la URL
+     * directamente — esto garantiza la descarga del archivo real (.pdf / .xlsx)
+     * sin que Vaadin lo intercepte como navegación y genere un .htm.
+     */
+    private void descargarRecurso(StreamResource resource) {
+        StreamRegistration registration = VaadinSession.getCurrent()
+                .getResourceRegistry()
+                .registerResource(resource);
+        UI.getCurrent().getPage().open(registration.getResourceUri().toString());
+    }
+
     private void renderizarTarjetas() {
         contenedorTarjetas.removeAll();
 
-        // Agrupar por fase
+        if (partidosActuales.isEmpty()) {
+            Span vacio = new Span("No hay partidos programados para este torneo.");
+            vacio.getStyle()
+                    .set("color", "var(--lumo-secondary-text-color)")
+                    .set("font-style", "italic")
+                    .set("padding", "24px 0");
+            contenedorTarjetas.add(vacio);
+            return;
+        }
+
+        // Agrupar por fase preservando el orden de inserción
         Map<String, List<PartidoResponse>> porFase = new java.util.LinkedHashMap<>();
         for (PartidoResponse p : partidosActuales) {
-            String fase = p.fase() != null ? p.fase() : "PARTIDOS";
+            String fase = (p.fase() != null && !p.fase().isBlank()) ? p.fase() : "PARTIDOS";
             porFase.computeIfAbsent(fase, k -> new java.util.ArrayList<>()).add(p);
         }
 
         boolean multiFase = porFase.size() > 1;
 
         for (Map.Entry<String, List<PartidoResponse>> entry : porFase.entrySet()) {
-            if (multiFase) {
-                com.vaadin.flow.component.html.H3 tituloFase =
-                        new com.vaadin.flow.component.html.H3(entry.getKey());
-                tituloFase.getStyle()
-                        .set("color", "#1a237e")
-                        .set("border-bottom", "2px solid var(--lumo-primary-color)")
-                        .set("padding-bottom", "4px")
-                        .set("width", "100%")
-                        .set("margin-top", "16px");
-                contenedorTarjetas.add(tituloFase);
-            }
+            // Siempre mostrar el encabezado de fase para dar contexto
+            com.vaadin.flow.component.html.H3 tituloFase =
+                    new com.vaadin.flow.component.html.H3(entry.getKey());
+            tituloFase.getStyle()
+                    .set("color", "#1a237e")
+                    .set("border-bottom", "2px solid var(--lumo-primary-color)")
+                    .set("padding-bottom", "4px")
+                    .set("width", "100%")
+                    .set("margin-top", multiFase ? "16px" : "0")
+                    .set("margin-bottom", "8px");
+            contenedorTarjetas.add(tituloFase);
+
             for (PartidoResponse p : entry.getValue()) {
                 contenedorTarjetas.add(crearMatchCard(p));
             }
@@ -173,7 +206,6 @@ public class FixtureView extends VerticalLayout {
         footer.setAlignItems(FlexComponent.Alignment.CENTER);
 
         if (esAdminOOrganizador()) {
-            // Verificar que el usuario puede modificar ESTE partido específico
             if (torneoSeleccionado != null &&
                     partidoService.puedeModificar(torneoSeleccionado.id())) {
                 Button btnResultado = new Button(partido.jugado() ? "✏️" : "⚽",

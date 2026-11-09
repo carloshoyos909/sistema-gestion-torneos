@@ -5,12 +5,12 @@ import com.torneos.dto.TorneoResponse;
 import com.torneos.service.ReporteService;
 import com.torneos.service.TablaPosicionesService;
 import com.torneos.service.TorneoService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -20,7 +20,9 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinSession;
 import jakarta.annotation.security.RolesAllowed;
 
 import java.util.ArrayList;
@@ -50,23 +52,32 @@ public class TablaPosicionesView extends VerticalLayout {
         torneo.setItems(torneoService.getTorneosActivos());
         torneo.setWidth("300px");
 
-        Button btnPdf = new Button("PDF", new Icon(VaadinIcon.FILE_TEXT));
-        btnPdf.addThemeVariants(ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_SMALL);
+        Button btnPdf = new Button("⬇ PDF", new Icon(VaadinIcon.FILE_TEXT));
+        btnPdf.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+        btnPdf.getStyle()
+                .set("background", "#1a237e")
+                .set("color", "#ffffff");
         btnPdf.setEnabled(false);
 
-        Button btnExcel = new Button("Excel", new Icon(VaadinIcon.TABLE));
+        Button btnExcel = new Button("⬇ Excel", new Icon(VaadinIcon.TABLE));
         btnExcel.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_SMALL);
         btnExcel.setEnabled(false);
 
-        Anchor anchorPdf = new Anchor("", "");
-        anchorPdf.getElement().setAttribute("download", true);
-        anchorPdf.add(btnPdf);
-        anchorPdf.getStyle().set("text-decoration", "none");
+        btnPdf.addClickListener(e -> {
+            if (torneoSeleccionado == null || datosActuales.isEmpty()) return;
+            String nombre = torneoSeleccionado.nombre();
+            descargarRecurso(new StreamResource(
+                    "posiciones_" + nombre.replaceAll("[^a-zA-Z0-9]", "_") + ".pdf",
+                    () -> reporteService.generarPdfTablaPosiciones(nombre, datosActuales)));
+        });
 
-        Anchor anchorExcel = new Anchor("", "");
-        anchorExcel.getElement().setAttribute("download", true);
-        anchorExcel.add(btnExcel);
-        anchorExcel.getStyle().set("text-decoration", "none");
+        btnExcel.addClickListener(e -> {
+            if (torneoSeleccionado == null || datosActuales.isEmpty()) return;
+            String nombre = torneoSeleccionado.nombre();
+            descargarRecurso(new StreamResource(
+                    "posiciones_" + nombre.replaceAll("[^a-zA-Z0-9]", "_") + ".xlsx",
+                    () -> reporteService.generarExcelTablaPosiciones(nombre, datosActuales)));
+        });
 
         configurarGrid();
 
@@ -80,24 +91,26 @@ public class TablaPosicionesView extends VerticalLayout {
             } else {
                 datosActuales = tablaPosicionesService.obtenerTablaOrdenada(torneoSeleccionado.id());
                 grid.setItems(datosActuales);
-                btnPdf.setEnabled(true);
-                btnExcel.setEnabled(true);
-                String nombre = torneoSeleccionado.nombre();
-                anchorPdf.setHref(new StreamResource(
-                        "posiciones_" + nombre.replaceAll("\\s+", "_") + ".pdf",
-                        () -> reporteService.generarPdfTablaPosiciones(nombre, datosActuales)));
-                anchorExcel.setHref(new StreamResource(
-                        "posiciones_" + nombre.replaceAll("\\s+", "_") + ".xlsx",
-                        () -> reporteService.generarExcelTablaPosiciones(nombre, datosActuales)));
+                boolean hayDatos = !datosActuales.isEmpty();
+                btnPdf.setEnabled(hayDatos);
+                btnExcel.setEnabled(hayDatos);
             }
         });
 
-        HorizontalLayout toolbar = new HorizontalLayout(torneo, anchorPdf, anchorExcel);
+        HorizontalLayout toolbar = new HorizontalLayout(torneo, btnPdf, btnExcel);
         toolbar.setAlignItems(FlexComponent.Alignment.END);
+        toolbar.setSpacing(true);
 
         add(titulo, toolbar, grid);
         setPadding(true);
         setSpacing(true);
+    }
+
+    private void descargarRecurso(StreamResource resource) {
+        StreamRegistration registration = VaadinSession.getCurrent()
+                .getResourceRegistry()
+                .registerResource(resource);
+        UI.getCurrent().getPage().open(registration.getResourceUri().toString());
     }
 
     private void configurarGrid() {

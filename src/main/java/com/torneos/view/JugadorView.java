@@ -6,12 +6,12 @@ import com.torneos.model.Jugador;
 import com.torneos.service.EstadisticaService;
 import com.torneos.service.ReporteService;
 import com.torneos.service.TorneoService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
@@ -25,7 +25,9 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinSession;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -63,27 +65,35 @@ public class JugadorView extends VerticalLayout {
         buscarJugador.setWidth("200px");
         buscarJugador.setClearButtonVisible(true);
 
-        // ── Botones exportar ─────────────────────────────────────────────────
-        Button btnPdf = new Button("PDF", new Icon(VaadinIcon.FILE_TEXT));
-        btnPdf.addThemeVariants(ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_SMALL);
+        // ── Botones exportar — descarga directa vía StreamRegistration ───────
+        Button btnPdf = new Button("⬇ PDF", new Icon(VaadinIcon.FILE_TEXT));
+        btnPdf.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+        btnPdf.getStyle()
+                .set("background", "#1a237e")
+                .set("color", "#ffffff");
         btnPdf.setEnabled(false);
 
-        Button btnExcel = new Button("Excel", new Icon(VaadinIcon.TABLE));
+        Button btnExcel = new Button("⬇ Excel", new Icon(VaadinIcon.TABLE));
         btnExcel.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_SMALL);
         btnExcel.setEnabled(false);
 
-        Anchor anchorPdf = new Anchor("", "");
-        anchorPdf.getElement().setAttribute("download", true);
-        anchorPdf.add(btnPdf);
-        anchorPdf.getStyle().set("text-decoration", "none");
+        btnPdf.addClickListener(e -> {
+            if (torneoSeleccionado == null || datosActuales.isEmpty()) return;
+            String nombre = torneoSeleccionado.nombre();
+            descargarRecurso(new StreamResource(
+                    "estadisticas_" + nombre.replaceAll("[^a-zA-Z0-9]", "_") + ".pdf",
+                    () -> reporteService.generarPdfEstadisticas(nombre, datosActuales)));
+        });
 
-        Anchor anchorExcel = new Anchor("", "");
-        anchorExcel.getElement().setAttribute("download", true);
-        anchorExcel.add(btnExcel);
-        anchorExcel.getStyle().set("text-decoration", "none");
+        btnExcel.addClickListener(e -> {
+            if (torneoSeleccionado == null || datosActuales.isEmpty()) return;
+            String nombre = torneoSeleccionado.nombre();
+            descargarRecurso(new StreamResource(
+                    "estadisticas_" + nombre.replaceAll("[^a-zA-Z0-9]", "_") + ".xlsx",
+                    () -> reporteService.generarExcelEstadisticas(nombre, datosActuales)));
+        });
 
-        HorizontalLayout filtros = new HorizontalLayout(torneo, buscarJugador,
-                anchorPdf, anchorExcel);
+        HorizontalLayout filtros = new HorizontalLayout(torneo, buscarJugador, btnPdf, btnExcel);
         filtros.setAlignItems(FlexComponent.Alignment.END);
         filtros.getStyle()
                 .set("background", "var(--lumo-contrast-5pct)")
@@ -98,15 +108,22 @@ public class JugadorView extends VerticalLayout {
         // ── Eventos ──────────────────────────────────────────────────────────
         torneo.addValueChangeListener(event -> {
             torneoSeleccionado = event.getValue();
-            actualizarGrid(buscarJugador.getValue(), anchorPdf, anchorExcel, btnPdf, btnExcel);
+            actualizarGrid(buscarJugador.getValue(), btnPdf, btnExcel);
         });
 
         buscarJugador.addValueChangeListener(event ->
-                actualizarGrid(event.getValue(), anchorPdf, anchorExcel, btnPdf, btnExcel));
+                actualizarGrid(event.getValue(), btnPdf, btnExcel));
 
         add(titulo, filtros, grid);
         setPadding(true);
         setSpacing(true);
+    }
+
+    private void descargarRecurso(StreamResource resource) {
+        StreamRegistration registration = VaadinSession.getCurrent()
+                .getResourceRegistry()
+                .registerResource(resource);
+        UI.getCurrent().getPage().open(registration.getResourceUri().toString());
     }
 
     private void configurarGrid() {
@@ -142,7 +159,6 @@ public class JugadorView extends VerticalLayout {
                 .set("color", "var(--lumo-secondary-text-color)")
                 .set("font-size", "var(--lumo-font-size-m)");
 
-        // Búsqueda de jugador dentro del diálogo
         ComboBox<Jugador> selectorJugador = new ComboBox<>("Buscar y seleccionar jugador");
         selectorJugador.setItemLabelGenerator(j -> j.getNombre() + " — " + j.getEquipo().getNombre());
         selectorJugador.setWidthFull();
@@ -152,7 +168,6 @@ public class JugadorView extends VerticalLayout {
             selectorJugador.setItems(List.of());
         }
 
-        // Seleccionar automáticamente el jugador del registro actual
         try {
             estadisticaService.getJugadores(torneoSeleccionado.id()).stream()
                     .filter(j -> j.getId().equals(est.jugadorId()))
@@ -232,8 +247,7 @@ public class JugadorView extends VerticalLayout {
         dialog.open();
     }
 
-    private void actualizarGrid(String filtroNombre, Anchor anchorPdf, Anchor anchorExcel,
-                                 Button btnPdf, Button btnExcel) {
+    private void actualizarGrid(String filtroNombre, Button btnPdf, Button btnExcel) {
         if (torneoSeleccionado == null) {
             grid.setItems();
             datosActuales = new ArrayList<>();
@@ -244,16 +258,9 @@ public class JugadorView extends VerticalLayout {
 
         datosActuales = estadisticaService.getEstadisticas(torneoSeleccionado.id(), filtroNombre);
         grid.setItems(datosActuales);
-        btnPdf.setEnabled(true);
-        btnExcel.setEnabled(true);
-
-        String nombre = torneoSeleccionado.nombre();
-        anchorPdf.setHref(new StreamResource(
-                "estadisticas_" + nombre.replaceAll("\\s+", "_") + ".pdf",
-                () -> reporteService.generarPdfEstadisticas(nombre, datosActuales)));
-        anchorExcel.setHref(new StreamResource(
-                "estadisticas_" + nombre.replaceAll("\\s+", "_") + ".xlsx",
-                () -> reporteService.generarExcelEstadisticas(nombre, datosActuales)));
+        boolean hayDatos = !datosActuales.isEmpty();
+        btnPdf.setEnabled(hayDatos);
+        btnExcel.setEnabled(hayDatos);
     }
 
     private void actualizarGridSilencioso() {

@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════
    TEMA: Sistema de Gestión de Torneos
-   Paleta: Verde deportivo + Azul marino + Blanco
+   Paleta: Verde deportivo #00a651 + Azul marino #1a237e + Blanco
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── 1. Tipografía: Inter desde Google Fonts ─────────────── */
@@ -39,24 +39,35 @@
     --lumo-box-shadow-s:  0 2px 8px rgba(0,0,0,0.08);
     --lumo-box-shadow-m:  0 4px 16px rgba(0,0,0,0.12);
     --lumo-box-shadow-l:  0 8px 32px rgba(0,0,0,0.16);
+
+    /* Sidebar/navbar bg para referencia */
+    --app-navbar-bg:      #00a651;
+    --app-drawer-bg:      #1a237e;
 }
 
 /* ─── 3. Fondo general de la app ─────────────────────────── */
-html, body, vaadin-app-layout {
+html, body {
     background-color: #f0f2f5 !important;
 }
 
 /* ─── 4. Navbar (encabezado) ─────────────────────────────── */
 [part="navbar"] {
+    background-color: #00a651 !important;
     color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
 }
 
-[part="navbar"] h1 {
+[part="navbar"] h1,
+[part="navbar"] span,
+[part="navbar"] * {
     color: #ffffff !important;
 }
 
 vaadin-drawer-toggle {
+    color: #ffffff !important;
+}
+
+vaadin-drawer-toggle::part(button) {
     color: #ffffff !important;
 }
 
@@ -81,13 +92,14 @@ vaadin-side-nav-item::part(item) {
 vaadin-side-nav-item::part(item):hover {
     background: rgba(255,255,255,0.15) !important;
     color: #ffffff !important;
-    transform: translateX(4px) scale(1.01);
+    transform: translateX(4px);
 }
 
 vaadin-side-nav-item[active]::part(item) {
-    background: var(--lumo-primary-color) !important;
+    background: #00a651 !important;
     color: #ffffff !important;
-    font-weight: 600;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(0,166,81,0.4) !important;
 }
 
 /* ─── 6. Login ───────────────────────────────────────────── */
@@ -117,7 +129,7 @@ vaadin-side-nav-item[active]::part(item) {
 }
 
 .login-view p {
-    color: rgba(255,255,255,0.75) !important;
+    color: rgba(255,255,255,0.85) !important;
     font-size: 0.85rem !important;
     max-width: 340px;
     text-align: center;
@@ -186,6 +198,8 @@ vaadin-grid::part(row):nth-child(even) {
 }
 
 /* ─── 9. Botones ─────────────────────────────────────────── */
+
+/* Primary → verde */
 vaadin-button[theme~="primary"] {
     background: var(--lumo-primary-color) !important;
     color: #ffffff !important;
@@ -195,11 +209,44 @@ vaadin-button[theme~="primary"] {
 }
 
 vaadin-button[theme~="primary"]:hover {
-    filter: brightness(1.1) !important;
+    filter: brightness(1.08) !important;
 }
 
+/* Success → verde más oscuro */
+vaadin-button[theme~="success"] {
+    background: #1e7e34 !important;
+    color: #ffffff !important;
+    border-radius: var(--lumo-border-radius-m) !important;
+    font-weight: 600 !important;
+    transition: filter 0.2s !important;
+}
+
+vaadin-button[theme~="success"]:hover {
+    filter: brightness(1.08) !important;
+}
+
+/* Contrast → azul marino */
+vaadin-button[theme~="contrast"] {
+    background: #1a237e !important;
+    color: #ffffff !important;
+    border-radius: var(--lumo-border-radius-m) !important;
+    font-weight: 600 !important;
+    transition: filter 0.2s !important;
+}
+
+vaadin-button[theme~="contrast"]:hover {
+    filter: brightness(1.15) !important;
+}
+
+/* Error button */
 vaadin-button[theme~="error"] {
     border-radius: var(--lumo-border-radius-m) !important;
+}
+
+/* Botón deshabilitado — visible pero claramente inactivo */
+vaadin-button[disabled] {
+    opacity: 0.45 !important;
+    cursor: not-allowed !important;
 }
 
 /* ─── 10. Campos de texto ────────────────────────────────── */
@@ -227,6 +274,18 @@ vaadin-integer-field[focused]::part(input-field) {
     box-shadow: 0 0 0 3px var(--lumo-primary-color-10pct) !important;
 }
 
+/* Labels de campo */
+vaadin-text-field::part(label),
+vaadin-password-field::part(label),
+vaadin-combo-box::part(label),
+vaadin-date-picker::part(label),
+vaadin-time-picker::part(label),
+vaadin-text-area::part(label),
+vaadin-integer-field::part(label) {
+    font-weight: 600 !important;
+    color: #1a1a2e !important;
+}
+
 /* ─── 11. Diálogos ───────────────────────────────────────── */
 vaadin-dialog-overlay::part(overlay) {
     border-radius: var(--lumo-border-radius-l) !important;
@@ -241,17 +300,24 @@ vaadin-dialog-overlay::part(header) {
     font-weight: 600 !important;
 }
 
+vaadin-dialog-overlay::part(title) {
+    color: #ffffff !important;
+}
+
 /* ─── 12. Badges ─────────────────────────────────────────── */
 [theme~="badge"] {
     border-radius: 20px !important;
     font-weight: 600 !important;
     font-size: 0.8rem !important;
     padding: 2px 10px !important;
+    /* Badge neutro: gris azulado con buen contraste */
+    background: #e8eaf6 !important;
+    color: #1a237e !important;
 }
 
 [theme~="badge"][theme~="success"] {
-    background: #e6f4ea !important;
-    color: #1e7e34 !important;
+    background: #d4edda !important;
+    color: #155724 !important;
 }
 
 [theme~="badge"][theme~="error"] {
@@ -262,6 +328,11 @@ vaadin-dialog-overlay::part(header) {
 [theme~="badge"][theme~="contrast"] {
     background: #e8eaf6 !important;
     color: #1a237e !important;
+}
+
+[theme~="badge"][theme~="primary"] {
+    background: var(--lumo-primary-color-10pct) !important;
+    color: #00703a !important;
 }
 
 /* ─── 13. Notificaciones ─────────────────────────────────── */
@@ -363,59 +434,49 @@ vaadin-avatar {
 }
 
 /* ─── 20. Sidebar logout button ──────────────────────────── */
-[part="drawer"] vaadin-button[theme~="error"] {
-    color: #ff6b6b !important;
-    border: 1px solid rgba(255,107,107,0.3) !important;
-    border-radius: var(--lumo-border-radius-m) !important;
+.sidebar-logout vaadin-button {
+    color: rgba(255,255,255,0.75) !important;
 }
 
-[part="drawer"] vaadin-button[theme~="error"]:hover {
-    background: rgba(255,107,107,0.15) !important;
+.sidebar-logout vaadin-button:hover {
+    color: #ffffff !important;
+    background: rgba(220,50,50,0.2) !important;
 }
 
-/* ─── 21. Hr en sidebar ──────────────────────────────────── */
-[part="drawer"] hr {
-    border: none !important;
-    border-top: 1px solid rgba(255,255,255,0.15) !important;
-    margin: 8px 0 !important;
-}
-
-/* ─── 22. Animaciones Globales (Navbar, Perfil, Botones) ─── */
+/* ─── 21. vaadin-app-layout — asegurar fondo correcto ────── */
 vaadin-app-layout::part(navbar) {
-    background-color: var(--lumo-primary-color);
-    border-bottom: none;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); 
+    background: #00a651 !important;
 }
 
-.header-titulo {
-    transition: transform 0.2s ease-in-out, opacity 0.2s;
+vaadin-app-layout::part(drawer) {
+    background: #1a237e !important;
 }
 
-.header-titulo:hover {
-    transform: scale(1.02);
-    opacity: 0.9;
+/* ─── 22. ComboBox dropdown popup ────────────────────────── */
+vaadin-combo-box-overlay::part(overlay) {
+    border-radius: var(--lumo-border-radius-m) !important;
+    box-shadow: var(--lumo-box-shadow-m) !important;
 }
 
-.perfil-usuario {
-    transition: transform 0.2s ease, filter 0.2s;
-    cursor: pointer;
+/* ─── 23. Títulos H2 de secciones ────────────────────────── */
+h2 {
+    color: #1a237e;
+    font-weight: 700;
 }
 
-.perfil-usuario:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.15);
+h3 {
+    color: #1a237e;
+    font-weight: 600;
 }
 
-vaadin-button {
-    transition: transform 0.15s ease-in-out, filter 0.15s ease-in-out !important;
-}
-
-vaadin-button:hover {
-    transform: translateY(-2px) scale(1.02);
-    filter: brightness(1.1);
-    cursor: pointer;
-}
-
-vaadin-button:active {
-    transform: translateY(1px) scale(0.98);
+/* ─── 24. Fila de acciones dentro de tarjeta fixture ─────── */
+.fase-titulo {
+    color: #1a237e;
+    border-bottom: 2px solid #00a651;
+    padding-bottom: 4px;
+    font-weight: 700;
+    font-size: 1rem;
+    width: 100%;
+    margin-top: 16px;
+    margin-bottom: 8px;
 }
